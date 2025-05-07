@@ -6,3 +6,5 @@ Indicaciones
 -la contraseña para registrar usuarios administradores nuevos es ADMON123
 
 -La contraseña cifrada que hice siempre la he puesto como ( 123456 ) para evitar confusiones
+
+NO DE CLICK EN EL BOTONA AZUL QUE DICE COMPARE & PULL REQUEST
