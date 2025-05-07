@@ -1,5 +1,5 @@
 # PARCIAL3ARQUITECTURA
-Hice la base de datos inicial configurable acorde a las indicaciones dadas en el docmuneto
+Hice la base de datos inicial configurable acorde a las indicaciones dadas en el documento
 
 *conecte la base de datos para que trajera los datos e archivo database.js 
 
