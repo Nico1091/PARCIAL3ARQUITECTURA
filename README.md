@@ -10,4 +10,8 @@ Hice la base de datos inicial configurable acorde a las indicaciones dadas en el
 *Encripte los datos con la libreria BCRYPT lo ajuste para la contraseña
 
 *ajuste el usuario administrador y el usuario comun
+
+*He eliminado el que entre automaticamente al programa ya que considere molesto ese tipo de entrada
+
+*agregue un archivo CSS para cada interfaz HTML
 recuerden el comun se redirige al archivo bienvenida.html mientras que el administrador se redirije a admin.html
