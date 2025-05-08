@@ -1,0 +1,258 @@
+/* 
+***********************************************
+* ESTILOS CSS PARA el index verficar la fuente de la paleta de comandos
+* En la sesion de Mockups del cliente podemos ver una guia de estilo con referencia pero a nuestro propio criterio 
+* decidimos colocar los colores adjuntables en la parte de la guia donde indica los colores
+***********************************************
+*/
+
+:root {
+    /* Variables CSS reutilizables */
+    --primary-color: #1819FA;
+    /* Color azul especificado en la guia en este caso la utilizamos para 
+       establecer 
+    */
+    --primary-hover: #00A0FF;
+    /* Color azul más oscuro para hover */
+    --light-bg: #FFFFFF;
+    /* Fondo claro azulado */
+    --background: #FFFFFF;
+    /* Color de fondo general */
+    --text-dark: #000000;
+    /* Color de texto oscuro */
+    --text-light: #FFFFFF;
+    /* Color de texto claro */
+    --border-radius: 10px;
+    /* Radio de bordes redondeados */
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Sombra suave */
+}
+
+/* Reset básico para todos los elementos */
+* {
+    box-sizing: border-box;
+    /* Modelo de caja que incluye padding y border en el ancho */
+    margin: 0;
+    /* Elimina márgenes por defecto */
+    padding: 0;
+    /* Elimina padding por defecto */
+}
+
+/* Estilos generales del cuerpo del documento */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Fuente moderna */
+    text-align: center;
+    /* Alineación de texto al centro */
+    margin: 0;
+    /* Sin margen exterior */
+    padding: 20px;
+    /* Relleno interior de 20px */
+    background-color: var(--background);
+    /* Usa variable de color */
+    color: var(--text-dark);
+    /* Color de texto oscuro */
+    line-height: 1.6;
+    /* Espaciado entre líneas */
+}
+
+/* Contenedor principal centrado */
+.container {
+    max-width: 800px;
+    /* Ancho máximo del contenido */
+    margin: 0 auto;
+    /* Centrado horizontal */
+    padding: 0 15px;
+    /* Relleno lateral */
+}
+
+/* Estilo del título principal */
+h1 {
+    background-color: var(--primary-color);
+    /* Fondo azul */
+    color: var(--text-light);
+    /* Texto blanco */
+    padding: 15px;
+    /* Relleno interno */
+    margin: 0 0 30px 0;
+    /* Margen inferior */
+    border-radius: var(--border-radius);
+    /* Bordes redondeados */
+    font-size: 1.8rem;
+    /* Tamaño de fuente grande */
+}
+
+/* Estilo de subtítulos */
+h2 {
+    color: var(--primary-color);
+    /* Color azul */
+    margin-bottom: 15px;
+    /* Margen inferior */
+    font-size: 1.4rem;
+    /* Tamaño de fuente */
+}
+
+/* Caja de login/registro */
+.login-box {
+    background: var(--light-bg);
+    /* Fondo azul claro */
+    padding: 25px;
+    /* Relleno interno */
+    margin: 20px auto;
+    /* Margen superior e inferior, centrado */
+    border-radius: var(--border-radius);
+    /* Bordes redondeados */
+    width: 100%;
+    /* Ancho completo */
+    max-width: 350px;
+    /* Ancho máximo */
+    box-shadow: var(--box-shadow);
+    /* Sombra suave */
+}
+
+/* Estilos comunes para inputs, selects y botones */
+input,
+select,
+button {
+    margin: 10px 0;
+    /* Margen vertical */
+    padding: 12px 15px;
+    /* Relleno interno */
+    width: 100%;
+    /* Ancho completo */
+    border: 1px solid #ddd;
+    /* Borde gris claro */
+    border-radius: var(--border-radius);
+    /* Bordes redondeados */
+    font-size: 1rem;
+    /* Tamaño de fuente normal */
+    transition: all 0.3s ease;
+    /* Transición suave para efectos */
+}
+
+/* Efecto de focus para inputs */
+input:focus,
+select:focus {
+    outline: none;
+    /* Elimina contorno por defecto */
+    border-color: var(--primary-color);
+    /* Borde azul */
+    box-shadow: 0 0 0 2px rgba(51, 125, 255, 0.2);
+    /* Sombra azul suave */
+}
+
+/* Estilo de botones */
+button {
+    background-color: var(--primary-color);
+    /* Fondo azul */
+    color: var(--text-light);
+    /* Texto blanco */
+    font-weight: bold;
+    /* Texto en negrita */
+    cursor: pointer;
+    /* Cursor tipo puntero */
+    border: none;
+    /* Sin borde */
+    transition: background-color 0.3s;
+    /* Transición de color */
+}
+
+/* Efecto hover para botones */
+button:hover {
+    background-color: var(--primary-hover);
+    /* Azul más oscuro */
+}
+
+/* Estilo para botones deshabilitados */
+button:disabled {
+    background-color: #ccc;
+    /* Fondo gris */
+    cursor: not-allowed;
+    /* Cursor de no permitido */
+}
+
+/* Estilo del logo */
+img.logo {
+    width: 80px;
+    /* Ancho fijo */
+    margin-bottom: 20px;
+    /* Margen inferior */
+    border-radius: 50%;
+    /* Forma circular */
+    border: 3px solid var(--primary-color);
+    /* Borde azul */
+}
+
+/* Secciones de formulario */
+.form-section {
+    margin-bottom: 40px;
+    /* Margen inferior grande */
+}
+
+/* Mensajes de error */
+.error-message {
+    color: #d9534f;
+    /* Rojo para errores */
+    margin: 10px 0;
+    /* Margen vertical */
+    font-size: 0.9rem;
+    /* Tamaño de fuente pequeño */
+}
+
+/* Mensajes de éxito */
+.success-message {
+    color: #5cb85c;
+    /* Verde para éxitos */
+    margin: 10px 0;
+    /* Margen vertical */
+    font-size: 0.9rem;
+    /* Tamaño de fuente pequeño */
+}
+
+/* Enlace para cambiar entre login/registro */
+.toggle-form {
+    margin-top: 15px;
+    /* Margen superior */
+    font-size: 0.9rem;
+    /* Tamaño de fuente pequeño */
+}
+
+/* Estilo del enlace */
+.toggle-form a {
+    color: var(--primary-color);
+    /* Color azul */
+    text-decoration: none;
+    /* Sin subrayado */
+    font-weight: bold;
+    /* Negrita */
+    cursor: pointer;
+    /* Cursor tipo puntero */
+}
+
+/* Efecto hover para enlace */
+.toggle-form a:hover {
+    text-decoration: underline;
+    /* Subrayado al pasar mouse */
+}
+
+/* Media queries para diseño responsivo */
+@media (max-width: 600px) {
+
+    /* Estilos para pantallas pequeñas */
+    .login-box {
+        padding: 20px;
+        /* Menos relleno */
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        /* Título más pequeño */
+        padding: 12px;
+        /* Menos relleno */
+    }
+
+    h2 {
+        font-size: 1.2rem;
+        /* Subtítulo más pequeño */
+    }
+}

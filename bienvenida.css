@@ -1,0 +1,25 @@
+    /* 
+        ***********************************************
+        * ESTILOS CSS PARA LA PÁGINA DE BIENVENIDA
+        ***********************************************
+        */
+        
+        /* Estilos generales del cuerpo del documento */
+        body {
+            font-family: Arial, sans-serif;  /* Fuente sencilla y legible */
+            background: #eaf0ff;             /* Color de fondo azul claro */
+            display: flex;                   /* Usa el modelo flexbox */
+            justify-content: center;         /* Centra horizontalmente */
+            align-items: center;            /* Centra verticalmente */
+            height: 100vh;                  /* Altura igual al 100% del viewport */
+            text-align: center;             /* Alineación de texto al centro */
+        }
+
+        /* Estilo del contenedor del mensaje */
+        .mensaje {
+            background: #337DFF;           /* Fondo azul */
+            color: white;                /* Texto blanco */
+            padding: 40px;              /* Relleno interno generoso */
+            border-radius: 20px;       /* Bordes muy redondeados */
+            font-size: 24px;          /* Tamaño de fuente grande */
+        }
