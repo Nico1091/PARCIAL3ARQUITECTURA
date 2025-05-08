@@ -29,9 +29,10 @@
                 <!-- establece el tipo de usuario  segun su numero correspondiente-->
                 <select id="tipoUsuario">
                     <option value="1">Usuario normal</option>
+                    <!-- establece que si se guarda como perfil tipo 1 en la base de datos significa que es un usuario normal-->
                     <option value="2">Administrador</option>
+                    <!-- establece que si se guarda como perfil tipo 2 en la base de datos significa que es un usuario administrador-->
                 </select>
-
                 <!-- Campos de formulario esta es la entrada de los datos del usuario -->
                 <input type="text" id="usuario" placeholder="Nombre de usuario o correo electrónico" required>
                 <!-- Tipo de entrada texto variable usuario -->
@@ -242,8 +243,7 @@
 
                 if (res.ok) {
                     // Mostrar mensaje de éxito e iniciar sesión automáticamente
-                    document.getElementById('registerSuccess').textContent = 'Registro exitoso. Iniciando sesión...';
-                    await iniciarSesionAutomatico(email, contrasena);
+                    document.getElementById('registerSuccess').textContent = 'Registro exitoso.';
                 } else {
                     showError('registerError', data.message || "Error al registrar el usuario");
                 }

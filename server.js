@@ -194,7 +194,7 @@ app.post('/login', async (req, res) => {
 
 // Ruta de ejemplo solo para admin
 app.get('/admin/dashboard', isAdmin, (req, res) => {
-    //manda traer el app al panel de administracion, revisa si es administrador mediante la funcion establecida y paramtriza los datos a enviar y la forma de responder 
+    //manda traer el app al panel de administracion, revisa si es administrador mediante la funcion establecida y parametriza los datos a enviar y la forma de responder 
     res.json({ 
         //responde mediente JSON como: bienvenido al panel de administracion 
         message: 'Bienvenido al panel de administración',

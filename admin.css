@@ -1,137 +1,25 @@
-/* ESTILOS GENERALES DEL PERFIL */
-.profile-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #343940;
-}
+    /* 
+        ***********************************************
+        * ESTILOS CSS PARA LA PÁGINA DE BIENVENIDA
+        ***********************************************
+        */
+        
+        /* Estilos generales del cuerpo del documento */
+        body {
+            font-family: Arial, sans-serif;  /* Fuente sencilla y legible */
+            background: #eaf0ff;             /* Color de fondo azul claro */
+            display: flex;                   /* Usa el modelo flexbox */
+            justify-content: center;         /* Centra horizontalmente */
+            align-items: center;            /* Centra verticalmente */
+            height: 100vh;                  /* Altura igual al 100% del viewport */
+            text-align: center;             /* Alineación de texto al centro */
+        }
 
-.profile-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.logo {
-    font-size: 24px;
-    margin-right: 10px;
-}
-
-.profile-main-info {
-    margin-top: 30px;
-}
-
-.profile-photo {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #1819FA;
-    margin-bottom: 20px;
-}
-
-.profile-titles span {
-    display: block;
-    margin: 5px 0;
-    color: #6C757D;
-}
-
-.profile-titles i {
-    margin-right: 8px;
-    color: #00A0FF;
-}
-
-/* ESTRUCTURA DE COLUMNAS */
-.profile-sections {
-    display: flex;
-    gap: 30px;
-}
-
-.profile-left-column {
-    flex: 1;
-}
-
-.profile-right-column {
-    flex: 1;
-}
-
-/* ESTILOS DE SECCIONES */
-.profile-section {
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.profile-section h3 {
-    color: #1819FA;
-    margin-bottom: 15px;
-    font-size: 18px;
-    border-bottom: 1px solid #EEE;
-    padding-bottom: 10px;
-}
-
-.profile-list {
-    list-style-type: none;
-    padding: 0;
-}
-
-.profile-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #F5F5F5;
-}
-
-/* HABILIDADES */
-.skills-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.skill-tag {
-    background-color: #F0F5FF;
-    color: #1819FA;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-}
-
-/* BIOGRAFÍA */
-.bio-section {
-    background-color: #F8F9FA;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-}
-
-/* PUBLICACIONES */
-.publication {
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #EEE;
-}
-
-.publication h4 {
-    margin-bottom: 5px;
-    color: #343940;
-}
-
-.publication-meta {
-    color: #6C757D;
-    font-size: 14px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .profile-sections {
-        flex-direction: column;
-    }
-}
+        /* Estilo del contenedor del mensaje */
+        .mensaje {
+            background: #337DFF;           /* Fondo azul */
+            color: white;                /* Texto blanco */
+            padding: 40px;              /* Relleno interno generoso */
+            border-radius: 20px;       /* Bordes muy redondeados */
+            font-size: 24px;          /* Tamaño de fuente grande */
+        }
