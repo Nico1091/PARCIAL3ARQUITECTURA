@@ -18,3 +18,5 @@ recuerden el comun se redirige al archivo bienvenida.html mientras que el admini
 
 *Mediante blobeo metodo Parseo agregue archivos blobeados con JSON
 aun no he comentado las lineas de codigo correspondientes
+
+*hice el cambio de la base de datos a autoincremental para que la base de datos no tenga problemas al colocar una nueva publicacion
