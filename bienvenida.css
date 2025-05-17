@@ -1,137 +1,178 @@
-        /* ESTILOS GENERALES DEL PERFIL */
-.profile-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #343940;
+/* 
+***********************************************
+* ESTILOS CSS PARA LA APLICACIÓN
+* Se utilizan variables CSS para mantener consistencia
+***********************************************
+*/
+
+:root {
+    /* Variables CSS reutilizables */
+    --primary-color: #337DFF;
+    /* Color azul principal */
+    --primary-hover: #2a6bd8;
+    /* Color azul más oscuro para hover */
+    --light-bg: #cfe3ff;
+    /* Fondo claro azulado */
+    --background: #f5f5f5;
+    /* Color de fondo general */
+    --text-dark: #333;
+    /* Color de texto oscuro */
+    --text-light: #fff;
+    /* Color de texto claro */
+    --border-radius: 10px;
+    /* Radio de bordes redondeados */
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Sombra suave */
 }
 
-.profile-header {
+#label-desplegable{
+    color: white;
+    background-color:blue;
     text-align: center;
-    margin-bottom: 40px;
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.logo {
-    font-size: 24px;
-    margin-right: 10px;
-}
-
-.profile-main-info {
-    margin-top: 30px;
-}
-
-.profile-photo {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #1819FA;
-    margin-bottom: 20px;
-}
-
-.profile-titles span {
     display: block;
-    margin: 5px 0;
-    color: #6C757D;
+    white-space:pre-wrap;
+    border-radius:var(--border-radius);
+    margin:20px
 }
 
-.profile-titles i {
-    margin-right: 8px;
-    color: #00A0FF;
+/* Caja de login/registro */
+.login-box {
+    background: var(--light-bg);
+    /* Fondo azul claro */
+    padding: 25px;
+    /* Relleno interno */
+    margin: 200px ;
+    /* Margen superior e inferior, centrado */
+    border-radius: var(--border-radius);
+    /* Bordes redondeados */
+    width: 50%;
+    /* Ancho completo */
+    max-width: 100px;
+    /* Ancho máximo */
+    box-shadow: var(--box-shadow);
+    /* Sombra suave */
 }
 
-/* ESTRUCTURA DE COLUMNAS */
-.profile-sections {
-    display: flex;
-    gap: 30px;
+/* Estilos comunes para inputs, selects y botones */
+input,
+select,
+button {
+    border-radius: 50%;
+    margin: 10px 0;
+    /* Margen vertical */
+    padding: 12px 15px;
+    /* Relleno interno */
+    width: 50%;
+    /* Ancho completo */
+    border: 1px solid #ddd;
+    /* Borde gris claro */
+    border-radius: var(--border-radius);
+    /* Bordes redondeados */
+    font-size: 1rem;
+    /* Tamaño de fuente normal */
+    transition: all 0.3s ease;
+    /* Transición suave para efectos */
+ 
 }
 
-.profile-left-column {
-    flex: 1;
+
+
+/* Efecto de focus para inputs */
+input:focus,
+select:focus {
+    outline: none;
+    /* Elimina contorno por defecto */
+    border-color: var(--primary-color);
+    /* Borde azul */
+    box-shadow: 0 0 0 2px rgba(51, 125, 255, 0.2);
+    /* Sombra azul suave */
 }
 
-.profile-right-column {
-    flex: 1;
+/* Estilo de botones */
+button {
+    background-color: var(--primary-color);
+    /* Fondo azul */
+    color: var(--text-light);
+    /* Texto blanco */
+    font-weight: bold;
+    /* Texto en negrita */
+    cursor: pointer;
+    /* Cursor tipo puntero */
+    border: none;
+    /* Sin borde */
+    transition: background-color 0.3s;
+    /* Transición de color */
+    display: block;
+    /*asegurarse del funcionnamiento del boton*/
+    margin:0 auto;
+    /*centrado automatico de 0*/
 }
 
-/* ESTILOS DE SECCIONES */
-.profile-section {
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+
+
+/* Efecto hover para botones */
+button:hover {
+    background-color: var(--primary-hover);
+    /* Azul más oscuro */
 }
 
-.profile-section h3 {
-    color: #1819FA;
-    margin-bottom: 15px;
-    font-size: 18px;
-    border-bottom: 1px solid #EEE;
-    padding-bottom: 10px;
+/* Estilo para botones deshabilitados */
+button:disabled {
+    background-color: #ccc;
+    /* Fondo gris */
+    cursor: not-allowed;
+    /* Cursor de no permitido */
 }
 
-.profile-list {
-    list-style-type: none;
-    padding: 0;
+
+/* Secciones de formulario */
+.form-section {
+    margin-bottom: 40px;
+    /* Margen inferior grande */
 }
 
-.profile-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid #F5F5F5;
+/* Mensajes de error */
+.error-message {
+    color: #d9534f;
+    /* Rojo para errores */
+    margin: 10px 0;
+    /* Margen vertical */
+    font-size: 0.9rem;
+    /* Tamaño de fuente pequeño */
 }
 
-/* HABILIDADES */
-.skills-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+/* Mensajes de éxito */
+.success-message {
+    color: #5cb85c;
+    /* Verde para éxitos */
+    margin: 10px 0;
+    /* Margen vertical */
+    font-size: 0.9rem;
+    /* Tamaño de fuente pequeño */
 }
 
-.skill-tag {
-    background-color: #F0F5FF;
-    color: #1819FA;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-}
 
-/* BIOGRAFÍA */
-.bio-section {
-    background-color: #F8F9FA;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-}
 
-/* PUBLICACIONES */
-.publication {
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #EEE;
-}
 
-.publication h4 {
-    margin-bottom: 5px;
-    color: #343940;
-}
+/* Media queries para diseño responsivo */
+@media (max-width: 600px) {
 
-.publication-meta {
-    color: #6C757D;
-    font-size: 14px;
-}
+    /* Estilos para pantallas pequeñas */
+    .login-box {
+        padding: 200px;
+        /* Menos relleno */
+    }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .profile-sections {
-        flex-direction: column;
+    h1 {
+        font-size: 1.5rem;
+        /* Título más pequeño */
+        padding: 12px;
+        /* Menos relleno */
+    }
+
+    h2 {
+        font-size: 1.2rem;
+        /* Subtítulo más pequeño */
     }
 }

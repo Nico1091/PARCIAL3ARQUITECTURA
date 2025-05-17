@@ -11,8 +11,8 @@ const connection = require('./database');
 //llama al archivo database.js para conexion
 const app = express();
 //app es el componente que almacena las solicitudes de la base de datos por tanto se considera una variable puente entre los datos almacenados y lo programado
- //usamos el express para hacer peticiones a la base de datos
-const port = 3000; 
+//usamos el express para hacer peticiones a la base de datos
+const port = 3000;
 //puerto en el que se ejecuta el servidor 
 
 // Configuración
@@ -23,8 +23,8 @@ app.use(express.json());
 const Codigo_administraacion = 'ADMON123';
 
 // Middleware para verificar administracion
-    function isAdmin(req, res, next) { 
-         //Parametrizamos los datos que requerimos para verificacion y next para continuar
+function isAdmin(req, res, next) {
+    //Parametrizamos los datos que requerimos para verificacion y next para continuar
     if (req.user && req.user.id_perfil === 2) {
         //Si el usuario esta en estado 2=administrador podemos continuar
         return next();
@@ -33,25 +33,29 @@ const Codigo_administraacion = 'ADMON123';
     //si los parametros salen del condicional muestra al usuario que no esta autoorizado a ingresar
 }
 
+//El metodo de conexion a la base de datos para insertar documentos
+
+
+
 // Envio de datos
 app.post('/registro', async (req, res) => {
     // post para envio y recibimiento de datos en este caso mediante async para sincronizar request y response
-    const { nombre, email, contrasena, id_perfil, adminCode } = req.body; 
+    const { nombre, email, contrasena, id_perfil, adminCode } = req.body;
     //agarra algunos de los datos del usuario que estan en la base de datos de la tabla usuario mas el codigo de administrador
 
     // Validaciones básicas
-    if (!nombre || !email || !contrasena || !id_perfil) { 
+    if (!nombre || !email || !contrasena || !id_perfil) {
         // Comprobacion de que los datos si estan registrados por el usuario
         return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
 
     // Validación especial para administrador
     if (id_perfil === 2) {    //verifica que el usuario este en estado 2 o administrador
-        if (adminCode !== Codigo_administraacion) { 
+        if (adminCode !== Codigo_administraacion) {
             //Verfica que el codigo sea el correspondiente a administracion
-            return res.status(403).json({ 
-                  //retorna el estado 403 problemas de autenticacion por rango lo traduce en formato json a Codigo incorrecto
-                message: 'Código de administrador incorrecto' 
+            return res.status(403).json({
+                //retorna el estado 403 problemas de autenticacion por rango lo traduce en formato json a Codigo incorrecto
+                message: 'Código de administrador incorrecto'
             });
         }
     }
@@ -63,7 +67,7 @@ app.post('/registro', async (req, res) => {
         //hace la consulta a la base de datos sobre el email
         connection.query(ConsultaEmail, [email], async (error, resultados) => {
             //hace consulta con la conexion de la base de datos  email en este caso es un array ? para consulta de la base de datos
-        //  parametriza el objetor error y resultados 
+            //  parametriza el objetor error y resultados 
             if (error) {
                 // condicional de error
                 console.error('Error al verificar email:', error);
@@ -81,7 +85,7 @@ app.post('/registro', async (req, res) => {
             const var_hashercontrasena = await bcrypt.hash(contrasena, 10);
             // Variable constante parametrizadora de la contraseña hasheandola en este caso nivel 10
             // Insertar usuario
-            const Consultainsertar = 'INSERT INTO usuario (nombre, email, contrasena, id_perfil) VALUES (?, ?, ?, ?)'; 
+            const Consultainsertar = 'INSERT INTO usuario (nombre, email, contrasena, id_perfil) VALUES (?, ?, ?, ?)';
             // Inserta los datos del usuario entre ellos su contraseña
             connection.query(Consultainsertar, [nombre, email, var_hashercontrasena, id_perfil], (err, results) => {
                 // consulta de conexion a la base de datos verificando variables  
@@ -96,11 +100,11 @@ app.post('/registro', async (req, res) => {
                         //Almacena  si el error Sucedio en la base de datos o en server.js
                     });
                 }
-                
+
                 // Obtener datos del usuario recién creado sin la contraseña
                 const Consultatraerusuario = 'SELECT id, nombre, email, id_perfil FROM usuario WHERE id = ?';
                 connection.query(Consultatraerusuario, [results.insertId], (err, userResults) => {
-                //realiza la conexion a la base de datos con la consulta almacenada mas la consulta de results.insertid=(id=?)
+                    //realiza la conexion a la base de datos con la consulta almacenada mas la consulta de results.insertid=(id=?)
                     if (err || userResults.length === 0) {
                         //Comprueba en la base de datos si no ocurrio ningun error y si no devolvio ningun resultado
                         return res.status(201).json({ message: 'Usuario registrado exitosamente' });
@@ -108,7 +112,7 @@ app.post('/registro', async (req, res) => {
                     res.status(201).json({
                         //establece el estado de HTTP aa 201 para formato creado informa al usuario de que se creo mediante este estado traduciendolo a JSON
                         message: 'Usuario registrado exitosamente',
-                        usuario: userResults[0] 
+                        usuario: userResults[0]
                         //concatena los dtos del usuario y recorre a el nivel del id o la primera variable 
                     });
                 });
@@ -154,13 +158,13 @@ app.post('/login', async (req, res) => {
 
             if (results.length === 0) {
                 //si al ingresar la consulta muestra 0 o no aparece dentro de la base de datos sucede el condicionnal
-                return res.status(404).json({ 
+                return res.status(404).json({
                     //retorna el error 404 no encontrado o no existe encapsula el error de que no hay o no existen registros
-                    message: id_perfil === 2 ?     
-                    //este mensaje se aclara que es para el campo de id_perfil=2 lo que quiere decir que es un perfil de administrador
-                        'Administrador no encontrado o credenciales incorrectas' : 
-                        'Usuario no encontrado' 
-                        //Muestra mensajes para el problema
+                    message: id_perfil === 2 ?
+                        //este mensaje se aclara que es para el campo de id_perfil=2 lo que quiere decir que es un perfil de administrador
+                        'Administrador no encontrado o credenciales incorrectas' :
+                        'Usuario no encontrado'
+                    //Muestra mensajes para el problema
                 });
             }
 
@@ -191,17 +195,86 @@ app.post('/login', async (req, res) => {
         //responde con el estado de error 500: cuando no se sabe que sucedio o no supo encapsular el desarrollador  mostrandole al usuario por el protcolo JSON de que sucedio un error en el servidor
     }
 });
+// ———————— Subida de archivos y guardado en BD ————————
+// Asegurar carpeta uploads/
+const path = require('path');
+const fs = require('fs');
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+// Configurar Multer
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+});
+const upload = multer({ storage });
+
+// Ruta única POST /publicar
+app.post('/publicar', upload.single('archivo'), (req, res) => {
+    const { contenido, autor } = req.body;
+    const archivo = req.file;           // multer devuelve aquí el archivo
+    // Validación básica
+    if (!contenido?.trim() || isNaN(parseInt(autor)) || parseInt(autor) <= 0) {
+        return res.status(400).json({ error: 'Contenido o autor inválido' });
+    }
+    // Leer blob (si hay archivo)
+    let blob = null;
+    if (archivo) {
+        const fullPath = archivo.path;    // ruta dentro de /uploads
+        blob = fs.readFileSync(fullPath);
+    }
+    // Insert en la tabla publicacion
+    const sql = `
+    INSERT INTO publicacion (contenido, archivos, autor)
+    VALUES (?, ?, ?)
+  `;
+    connection.query(sql, [contenido.trim(), blob, autor], (err, result) => {
+        if (err) {
+            console.error('Error al guardar publicación:', err);
+            return res.status(500).json({ error: 'Error de base de datos' });
+        }
+        res.status(201).json({
+            message: 'Publicación guardada',
+            id_publicacion: result.insertId
+        });
+    });
+});
+
+
+
+app.post('/publicar', upload.single('archivo'), (req, res) => {
+    const { contenido, autor } = req.body;
+    const archivo = req.file; // undefined si no sube ningún archivo
+
+    // Validación básica
+    if (!contenido?.trim() || isNaN(parseInt(autor)) || parseInt(autor) <= 0) {
+        return res.status(400).json({ error: 'Contenido o autor inválido' });
+    }
+
+    // Aquí guardas en la base de datos, por ejemplo:
+    // db.query('INSERT INTO publicacion (contenido, archivos, autor) VALUES (?, ?, ?)', 
+    //          [contenido, archivo?.buffer || null, autor]);
+
+    console.log('Publicación recibida:', { contenido, autor, archivoName: archivo?.originalname });
+    res.status(200).json({ message: 'Publicación recibida correctamente' });
+});
+
+
+
 
 // Ruta de ejemplo solo para admin
 app.get('/admin/dashboard', isAdmin, (req, res) => {
-    //manda traer el app al panel de administracion, revisa si es administrador mediante la funcion establecida y parametriza los datos a enviar y la forma de responder 
-    res.json({ 
+    //manda traer el app al panel de administracion, revisa si es administrador mediante la funcion establecida y paramtriza los datos a enviar y la forma de responder 
+    res.json({
         //responde mediente JSON como: bienvenido al panel de administracion 
         message: 'Bienvenido al panel de administración',
-        usuario: req.user 
+        usuario: req.user
         //almacena los datos de usuario en la variable usuario 
     });
 });
+
+
 
 // Iniciar servidor
 app.listen(port, () => {

@@ -1,26 +1,23 @@
 /* 
 ***********************************************
-* ESTILOS CSS PARA el index verficar la fuente de la paleta de comandos
-* En la sesion de Mockups del cliente podemos ver una guia de estilo con referencia pero a nuestro propio criterio 
-* decidimos colocar los colores adjuntables en la parte de la guia donde indica los colores
+* ESTILOS CSS PARA LA APLICACIÓN
+* Se utilizan variables CSS para mantener consistencia
 ***********************************************
 */
 
 :root {
     /* Variables CSS reutilizables */
-    --primary-color: #1819FA;
-    /* Color azul especificado en la guia en este caso la utilizamos para 
-       establecer 
-    */
-    --primary-hover: #00A0FF;
+    --primary-color: #337DFF;
+    /* Color azul principal */
+    --primary-hover: #2a6bd8;
     /* Color azul más oscuro para hover */
-    --light-bg: #FFFFFF;
+    --light-bg: #cfe3ff;
     /* Fondo claro azulado */
-    --background: #FFFFFF;
+    --background: #f5f5f5;
     /* Color de fondo general */
-    --text-dark: #000000;
+    --text-dark: #333;
     /* Color de texto oscuro */
-    --text-light: #FFFFFF;
+    --text-light: #fff;
     /* Color de texto claro */
     --border-radius: 10px;
     /* Radio de bordes redondeados */
