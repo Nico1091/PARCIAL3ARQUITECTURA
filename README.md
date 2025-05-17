@@ -15,3 +15,6 @@ Hice la base de datos inicial configurable acorde a las indicaciones dadas en el
 
 *agregue un archivo CSS para cada interfaz HTML
 recuerden el comun se redirige al archivo bienvenida.html mientras que el administrador se redirije a admin.html
+
+*Mediante blobeo metodo Parseo agregue archivos blobeados con JSON
+aun no he comentado las lineas de codigo correspondientes
