@@ -1,5 +1,10 @@
 # PARCIAL3ARQUITECTURA
-Hice la base de datos inicial configurable acorde a las indicaciones dadas en el documento
+
+*Hice la base de datos inicial configurable acorde a las indicaciones dadas en el documento
+
+*Los usuarios hablan entre si ya existe un chat para ello
+
+*falta revision para ofertas de trabajo
 
 *conecte la base de datos para que trajera los datos e archivo database.js 
 
@@ -20,3 +25,5 @@ recuerden el comun se redirige al archivo bienvenida.html mientras que el admini
 aun no he comentado las lineas de codigo correspondientes
 
 *hice el cambio de la base de datos a autoincremental para que la base de datos no tenga problemas al colocar una nueva publicacion
+
+*hice cambios a la base de datos pare hacer las publicaciones y poder chatear entre usuarios con sus respectivas solicitudes 
