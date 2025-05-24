@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicaciones - RedSocialPro</title>
+    <link rel="stylesheet" href="comunicaciones.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+        <nav class="nav-menu">
+            <a href="bienvenida.html"><i class="fas fa-home"></i> Inicio</a>
+            <a href="perfil.html"><i class="fas fa-user"></i> Perfil</a>
+            <a href="publicados.html"><i class="fas fa-newspaper"></i> Publicaciones</a>
+        </nav>
+        <div class="user-info">
+            <span id="userName">Usuario</span>
+            <button id="btnCerrarSesion" class="btn-action" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="chat-container">
+            <div class="contacts-list">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="cambiarTab('contactos')">Contactos</button>
+                    <button class="tab-btn" onclick="cambiarTab('buscar')">Buscar</button>
+                    <button class="tab-btn" onclick="cambiarTab('solicitudes')">Solicitudes <span id="solicitudesBadge" class="badge">0</span></button>
+                </div>
+
+                <!-- Panel de Contactos -->
+                <div id="contactosPanel" class="panel active">
+                    <div class="search-bar">
+                        <input type="text" id="searchContacts" placeholder="Filtrar contactos...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div id="contactsList" class="contacts">
+                        <!-- Los contactos se cargarán dinámicamente aquí -->
+                    </div>
+                </div>
+
+                <!-- Panel de Búsqueda -->
+                <div id="buscarPanel" class="panel">
+                    <div class="search-bar">
+                        <input type="text" id="searchUsers" placeholder="Buscar usuarios...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div id="usersList" class="contacts">
+                        <!-- Los usuarios encontrados se mostrarán aquí -->
+                    </div>
+                </div>
+
+                <!-- Panel de Solicitudes -->
+                <div id="solicitudesPanel" class="panel">
+                    <div id="solicitudesList" class="contacts">
+                        <!-- Las solicitudes pendientes se mostrarán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-window">
+                <div class="chat-header">
+                    <div id="selectedContact">
+                        <span>Selecciona un contacto para comenzar</span>
+                    </div>
+                </div>
+                <div id="messagesList" class="messages-list">
+                    <!-- Los mensajes se cargarán dinámicamente aquí -->
+                </div>
+                <div class="message-input">
+                    <textarea id="messageContent" placeholder="Escribe tu mensaje..."></textarea>
+                    <div class="message-actions">
+                        <button id="sendMessage" onclick="enviarMensaje()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let selectedContactId = null;
+        let messagePollingInterval = null;
+        let currentTab = 'contactos';
+
+        // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+            if (!token || !usuario) {
+                window.location.href = 'index.html?logout=true';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/verificar-token', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Token inválido');
+                }
+
+                document.getElementById('userName').textContent = usuario.nombre;
+                cargarContactos();
+                cargarSolicitudesPendientes();
+                configurarBusquedas();
+
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = 'index.html?logout=true';
+            }
+        });
+
+        function cambiarTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            document.querySelector(`.tab-btn[onclick="cambiarTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}Panel`).classList.add('active');
+
+            if (tab === 'solicitudes') {
+                cargarSolicitudesPendientes();
+            }
+        }
+
+        async function cargarSolicitudesPendientes() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:3000/solicitudes-pendientes', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al cargar solicitudes');
+                }
+
+                const solicitudes = await res.json();
+                mostrarSolicitudes(solicitudes);
+                actualizarBadgeSolicitudes(solicitudes.length);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al cargar las solicitudes');
+            }
+        }
+
+        function mostrarSolicitudes(solicitudes) {
+            const solicitudesList = document.getElementById('solicitudesList');
+            solicitudesList.innerHTML = '';
+
+            if (solicitudes.length === 0) {
+                solicitudesList.innerHTML = '<p class="no-contacts">No hay solicitudes pendientes</p>';
+                return;
+            }
+
+            solicitudes.forEach(solicitud => {
+                const solicitudElement = document.createElement('div');
+                solicitudElement.className = 'contact-item solicitud-item';
+                
+                solicitudElement.innerHTML = `
+                    <div class="contact-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-name">${solicitud.nombre_solicitante}</span>
+                        <span class="contact-status">${solicitud.email_solicitante}</span>
+                    </div>
+                    <div class="solicitud-actions">
+                        <button onclick="responderSolicitud(${solicitud.id_conexion}, 'aceptada')" class="btn-accept">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button onclick="responderSolicitud(${solicitud.id_conexion}, 'rechazada')" class="btn-reject">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+
+                solicitudesList.appendChild(solicitudElement);
+            });
+        }
+
+        function actualizarBadgeSolicitudes(cantidad) {
+            const badge = document.getElementById('solicitudesBadge');
+            badge.textContent = cantidad;
+            badge.style.display = cantidad > 0 ? 'inline' : 'none';
+        }
+
+        async function responderSolicitud(conexionId, respuesta) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`http://localhost:3000/responder-solicitud/${conexionId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ respuesta })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al responder solicitud');
+                }
+
+                await cargarSolicitudesPendientes();
+                if (respuesta === 'aceptada') {
+                    await cargarContactos();
+                }
+                mostrarError(`Solicitud ${respuesta === 'aceptada' ? 'aceptada' : 'rechazada'} exitosamente`);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al procesar la solicitud');
+            }
+        }
+
+        function configurarBusquedas() {
+            const searchUsers = document.getElementById('searchUsers');
+            let timeoutId;
+
+            searchUsers.addEventListener('input', (e) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => buscarUsuarios(e.target.value), 500);
+            });
+
+            const searchContacts = document.getElementById('searchContacts');
+            searchContacts.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const contactElements = document.querySelectorAll('#contactsList .contact-item');
+                
+                contactElements.forEach(element => {
+                    const nombre = element.querySelector('.contact-name').textContent.toLowerCase();
+                    element.style.display = nombre.includes(searchTerm) ? 'flex' : 'none';
+                });
+            });
+        }
+
+        async function buscarUsuarios(busqueda) {
+            if (!busqueda) {
+                document.getElementById('usersList').innerHTML = '<p class="no-contacts">Ingresa un término de búsqueda</p>';
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`http://localhost:3000/buscar-usuarios?busqueda=${encodeURIComponent(busqueda)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al buscar usuarios');
+                }
+
+                const usuarios = await res.json();
+                mostrarUsuariosEncontrados(usuarios);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al buscar usuarios');
+            }
+        }
+
+        function mostrarUsuariosEncontrados(usuarios) {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+
+            if (usuarios.length === 0) {
+                usersList.innerHTML = '<p class="no-contacts">No se encontraron usuarios</p>';
+                return;
+            }
+
+            usuarios.forEach(usuario => {
+                const usuarioElement = document.createElement('div');
+                usuarioElement.className = 'contact-item';
+                
+                let botonAccion = '';
+                if (!usuario.estado_conexion) {
+                    botonAccion = `
+                        <button onclick="enviarSolicitud(${usuario.id_usuario})" class="btn-add-contact">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                    `;
+                } else if (usuario.estado_conexion === 'pendiente') {
+                    botonAccion = '<span class="pending-status">Pendiente</span>';
+                } else if (usuario.estado_conexion === 'aceptada') {
+                    botonAccion = '<span class="connected-status">Conectado</span>';
+                }
+
+                usuarioElement.innerHTML = `
+                    <div class="contact-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-name">${usuario.nombre}</span>
+                        <span class="contact-status">${usuario.email}</span>
+                    </div>
+                    <div class="contact-actions">
+                        ${botonAccion}
+                    </div>
+                `;
+
+                usersList.appendChild(usuarioElement);
+            });
+        }
+
+        async function enviarSolicitud(usuarioId) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:3000/enviar-solicitud', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ usuarioSolicitadoId: usuarioId })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al enviar solicitud');
+                }
+
+                mostrarError('Solicitud enviada exitosamente');
+                // Actualizar la lista de usuarios
+                const searchUsers = document.getElementById('searchUsers');
+                buscarUsuarios(searchUsers.value);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al enviar la solicitud');
+            }
+        }
+
+        async function cargarContactos() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:3000/obtener-contactos', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al cargar contactos');
+                }
+
+                const contactos = await res.json();
+                mostrarContactos(contactos);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al cargar los contactos');
+            }
+        }
+
+        function mostrarContactos(contactos) {
+            const contactsList = document.getElementById('contactsList');
+            contactsList.innerHTML = '';
+
+            if (contactos.length === 0) {
+                contactsList.innerHTML = '<p class="no-contacts">No hay contactos disponibles</p>';
+                return;
+            }
+
+            contactos.forEach(contacto => {
+                const contactoElement = document.createElement('div');
+                contactoElement.className = 'contact-item';
+                contactoElement.onclick = () => seleccionarContacto(contacto);
+                
+                contactoElement.innerHTML = `
+                    <div class="contact-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="contact-info">
+                        <span class="contact-name">${contacto.nombre}</span>
+                        <span class="contact-status">${contacto.ultimo_mensaje || 'Sin mensajes'}</span>
+                    </div>
+                `;
+
+                contactsList.appendChild(contactoElement);
+            });
+        }
+
+        function seleccionarContacto(contacto) {
+            selectedContactId = contacto.id_usuario;
+            
+            const selectedContact = document.getElementById('selectedContact');
+            selectedContact.innerHTML = `
+                <div class="contact-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <span class="contact-name">${contacto.nombre}</span>
+            `;
+
+            cargarMensajes();
+
+            // Iniciar polling de mensajes
+            if (messagePollingInterval) {
+                clearInterval(messagePollingInterval);
+            }
+            messagePollingInterval = setInterval(cargarMensajes, 5000);
+        }
+
+        async function cargarMensajes() {
+            if (!selectedContactId) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`http://localhost:3000/obtener-mensajes/${selectedContactId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al cargar mensajes');
+                }
+
+                const mensajes = await res.json();
+                mostrarMensajes(mensajes);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al cargar los mensajes');
+            }
+        }
+
+        function mostrarMensajes(mensajes) {
+            const messagesList = document.getElementById('messagesList');
+            messagesList.innerHTML = '';
+
+            if (mensajes.length === 0) {
+                messagesList.innerHTML = '<p class="no-messages">No hay mensajes aún. ¡Comienza la conversación!</p>';
+                return;
+            }
+
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            mensajes.forEach(mensaje => {
+                const esPropio = mensaje.emisor_id === usuario.id_usuario;
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${esPropio ? 'message-own' : 'message-other'}`;
+                
+                messageElement.innerHTML = `
+                    <p class="message-text">${mensaje.mensaje}</p>
+                    <span class="message-time">${new Date(mensaje.fecha_envio).toLocaleString()}</span>
+                `;
+
+                messagesList.appendChild(messageElement);
+            });
+
+            // Scroll al último mensaje
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+
+        async function enviarMensaje() {
+            if (!selectedContactId) {
+                mostrarError('Por favor selecciona un contacto primero');
+                return;
+            }
+
+            const messageContent = document.getElementById('messageContent').value.trim();
+            if (!messageContent) {
+                mostrarError('El mensaje no puede estar vacío');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:3000/enviar-mensaje', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        receptorId: selectedContactId,
+                        mensaje: messageContent
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al enviar mensaje');
+                }
+
+                // Limpiar el campo de mensaje
+                document.getElementById('messageContent').value = '';
+                
+                // Recargar los mensajes
+                await cargarMensajes();
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al enviar el mensaje');
+            }
+        }
+
+        function mostrarError(mensaje) {
+            // Crear y mostrar un mensaje de error
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = mensaje;
+            
+            document.body.appendChild(errorDiv);
+            
+            // Eliminar el mensaje después de 3 segundos
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 3000);
+        }
+
+        // Función para cerrar sesión
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = 'index.html?logout=true';
+        }
+    </script>
+</body>
+</html> 

@@ -1,4 +1,76 @@
-create database Programa1;
+# Crear y usar la base de datos
+DROP DATABASE IF EXISTS Programa1;
+CREATE DATABASE Programa1;
+USE Programa1;
+
+# Tabla de perfiles de usuario
+CREATE TABLE perfil (
+    id_perfil INT PRIMARY KEY,
+    nombre_perfil VARCHAR(50)
+);
+
+# Insertar tipos de perfiles
+INSERT INTO perfil (id_perfil, nombre_perfil) VALUES
+(1, 'usuario'),
+(2, 'administrador');
+
+# Tabla de usuarios
+CREATE TABLE usuario (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    contrasena VARCHAR(255) NOT NULL,
+    id_perfil INT NOT NULL,
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_perfil) REFERENCES perfil(id_perfil)
+);
+
+# Tabla de mensajes
+CREATE TABLE mensajes (
+    id_mensaje INT PRIMARY KEY AUTO_INCREMENT,
+    emisor_id INT NOT NULL,
+    receptor_id INT NOT NULL,
+    mensaje TEXT NOT NULL,
+    fecha_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    leido BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (emisor_id) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (receptor_id) REFERENCES usuario(id_usuario)
+);
+
+# Tabla de conexiones/amistades
+CREATE TABLE conexiones (
+    id_conexion INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_solicitante INT NOT NULL,
+    usuario_solicitado INT NOT NULL,
+    estado ENUM('pendiente', 'aceptada', 'rechazada') DEFAULT 'pendiente',
+    fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_respuesta DATETIME DEFAULT NULL,
+    FOREIGN KEY (usuario_solicitante) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (usuario_solicitado) REFERENCES usuario(id_usuario)
+);
+
+# Insertar usuarios de prueba (contraseña: 123456)
+INSERT INTO usuario (nombre, email, contrasena, id_perfil) VALUES
+('Juan Pérez', 'juan@example.com', '$2b$10$YourHashedPasswordHere', 1),
+('María García', 'maria@example.com', '$2b$10$YourHashedPasswordHere', 1),
+('Admin', 'admin@example.com', '$2b$10$YourHashedPasswordHere', 2),
+('Ana López', 'ana@example.com', '$2b$10$YourHashedPasswordHere', 1),
+('Carlos Ruiz', 'carlos@example.com', '$2b$10$YourHashedPasswordHere', 1);
+
+# Crear algunas conexiones de prueba
+INSERT INTO conexiones (usuario_solicitante, usuario_solicitado, estado, fecha_respuesta) VALUES
+(1, 2, 'aceptada', NOW()),
+(1, 4, 'pendiente', NULL),
+(3, 1, 'aceptada', NOW()),
+(5, 2, 'pendiente', NULL);
+
+# Crear algunos mensajes de prueba
+INSERT INTO mensajes (emisor_id, receptor_id, mensaje) VALUES
+(1, 2, '¡Hola María! ¿Cómo estás?'),
+(2, 1, 'Hola Juan, todo bien ¿y tú?'),
+(3, 1, 'Hola Juan, soy el administrador'),
+(1, 3, 'Hola Admin, gracias por aceptar mi solicitud');
+
 #Comando utilizado para crear la tabla 
 use programa1;
 #comando utilizado para usar la base de datos
@@ -148,3 +220,111 @@ select * from usuario;
 #ESCRIBA AQUI SU NOMBRE
 #ESCRIBA AQUI SU NOMBRE
 #ESCRIBA AQUI SU NOMBRE
+
+-- Tabla de mensajes
+CREATE TABLE IF NOT EXISTS mensajes (
+    id_mensaje INT PRIMARY KEY AUTO_INCREMENT,
+    emisor_id INT NOT NULL,
+    receptor_id INT NOT NULL,
+    mensaje TEXT NOT NULL,
+    fecha_envio DATETIME NOT NULL,
+    leido BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (emisor_id) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (receptor_id) REFERENCES usuario(id_usuario)
+);
+
+-- Tabla de conexiones/amistades
+CREATE TABLE IF NOT EXISTS conexiones (
+    id_conexion INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_solicitante INT NOT NULL,
+    usuario_solicitado INT NOT NULL,
+    estado ENUM('pendiente', 'aceptada', 'rechazada') DEFAULT 'pendiente',
+    fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_respuesta DATETIME DEFAULT NULL,
+    FOREIGN KEY (usuario_solicitante) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (usuario_solicitado) REFERENCES usuario(id_usuario)
+);
+
+# Alteraciones para actualizar la estructura de la base de datos
+USE programa1;
+
+# Modificar la tabla usuario
+ALTER TABLE usuario
+MODIFY COLUMN nombre VARCHAR(100) NOT NULL,
+MODIFY COLUMN email VARCHAR(100) NOT NULL UNIQUE,
+MODIFY COLUMN contrasena VARCHAR(255) NOT NULL,
+ADD COLUMN fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP;
+
+# Crear tabla de mensajes si no existe
+CREATE TABLE IF NOT EXISTS mensajes (
+    id_mensaje INT PRIMARY KEY AUTO_INCREMENT,
+    emisor_id INT NOT NULL,
+    receptor_id INT NOT NULL,
+    mensaje TEXT NOT NULL,
+    fecha_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    leido BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (emisor_id) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (receptor_id) REFERENCES usuario(id_usuario)
+);
+
+# Crear tabla de conexiones si no existe
+CREATE TABLE IF NOT EXISTS conexiones (
+    id_conexion INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_solicitante INT NOT NULL,
+    usuario_solicitado INT NOT NULL,
+    estado ENUM('pendiente', 'aceptada', 'rechazada') DEFAULT 'pendiente',
+    fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_respuesta DATETIME DEFAULT NULL,
+    FOREIGN KEY (usuario_solicitante) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (usuario_solicitado) REFERENCES usuario(id_usuario)
+);
+
+# Insertar perfiles si no existen
+INSERT IGNORE INTO perfil (id_perfil, nombre_perfil) VALUES
+(1, 'usuario'),
+(2, 'administrador');
+
+# Actualizar las columnas BLOB a tipos más específicos
+ALTER TABLE usuario
+DROP COLUMN publicaciones,
+DROP COLUMN conexiones;
+
+# Actualizar la tabla perfil
+ALTER TABLE perfil
+MODIFY COLUMN experiencia TEXT,
+MODIFY COLUMN educacion TEXT,
+MODIFY COLUMN habilidades TEXT,
+MODIFY COLUMN resumen TEXT,
+MODIFY COLUMN foto MEDIUMBLOB;
+
+# Eliminar las restricciones de clave foránea antiguas si existen
+SET FOREIGN_KEY_CHECKS = 0;
+
+ALTER TABLE perfil
+DROP FOREIGN KEY IF EXISTS perfil_ibfk_1,
+DROP FOREIGN KEY IF EXISTS perfil_ibfk_2,
+DROP FOREIGN KEY IF EXISTS perfil_ibfk_3,
+DROP FOREIGN KEY IF EXISTS perfil_ibfk_4;
+
+ALTER TABLE perfil
+DROP COLUMN id_postulacion,
+DROP COLUMN id_mensaje,
+DROP COLUMN id_oportunidad,
+DROP COLUMN id_publicacion;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+# Crear índices para mejorar el rendimiento
+CREATE INDEX idx_usuario_nombre ON usuario(nombre);
+CREATE INDEX idx_usuario_email ON usuario(email);
+CREATE INDEX idx_conexiones_usuarios ON conexiones(usuario_solicitante, usuario_solicitado);
+CREATE INDEX idx_mensajes_usuarios ON mensajes(emisor_id, receptor_id);
+CREATE INDEX idx_conexiones_estado ON conexiones(estado);
+
+# Actualizar los usuarios existentes si es necesario
+UPDATE usuario SET id_perfil = 1 WHERE id_perfil IS NULL;
+
+# Verificar y corregir la secuencia de auto_increment
+ALTER TABLE usuario AUTO_INCREMENT = 1;
+ALTER TABLE mensajes AUTO_INCREMENT = 1;
+ALTER TABLE conexiones AUTO_INCREMENT = 1;

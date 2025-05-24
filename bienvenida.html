@@ -44,33 +44,23 @@
                 </p>
             </a>
 
-            <a href="publicacion.html" class="feature-card">
+            <a href="publicados.html" class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-newspaper"></i>
                 </div>
                 <h3 class="feature-title">Publicaciones</h3>
                 <p class="feature-description">
-                    Comparte y descubre contenido relevante para tu desarrollo profesional.
+                    Comparte contenido, gestiona tus publicaciones y desarrolla tu carrera profesional. Conecta con otros profesionales y alcanza tus metas.
                 </p>
             </a>
 
-            <a href="mensajes.html" class="feature-card">
+            <a href="comunicaciones.html" class="feature-card">
                 <div class="feature-icon">
-                    <i class="fas fa-lightbulb"></i>
+                    <i class="fas fa-comments"></i>
                 </div>
-                <h3 class="feature-title">Aprende</h3>
+                <h3 class="feature-title">Chat</h3>
                 <p class="feature-description">
-                    Comparte conocimientos y aprende de las experiencias de otros profesionales.
-                </p>
-            </a>
-
-            <a href="publicados.html" class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h3 class="feature-title">Crece</h3>
-                <p class="feature-description">
-                    Desarrolla tu carrera profesional y alcanza tus metas.
+                    Comunícate en tiempo real con otros profesionales, comparte archivos y mantén conversaciones privadas.
                 </p>
             </a>
         </div>
@@ -98,11 +88,10 @@
                     throw new Error('Token inválido');
                 }
 
-                // Mostrar nombre del usuario
                 document.getElementById('userName').textContent = usuario.nombre;
 
             } catch (error) {
-                console.error('Error al verificar token:', error);
+                console.error('Error:', error);
                 window.location.href = 'index.html?logout=true';
             }
         });
@@ -110,11 +99,6 @@
         async function cerrarSesion() {
             try {
                 const token = localStorage.getItem('token');
-                if (!token) {
-                    window.location.href = 'index.html?logout=true';
-                    return;
-                }
-
                 const res = await fetch('http://localhost:3000/logout', {
                     method: 'POST',
                     headers: {
@@ -122,15 +106,12 @@
                     }
                 });
 
-                const data = await res.json();
-                
-                if (res.ok) {
-                    console.log('Sesión cerrada exitosamente');
-                } else {
-                    console.error('Error al cerrar sesión:', data.message);
+                if (!res.ok) {
+                    throw new Error('Error al cerrar sesión');
                 }
+
             } catch (error) {
-                console.error('Error al cerrar sesión:', error);
+                console.error('Error:', error);
             } finally {
                 localStorage.clear();
                 window.location.href = 'index.html?logout=true';

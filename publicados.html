@@ -49,7 +49,20 @@
         </div>
     </div>
 
+    <!-- Modal de vista previa -->
+    <div id="previewModal" class="preview-modal">
+        <div class="preview-modal-content">
+            <button onclick="closePreviewModal()" class="close-preview">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="preview-container"></div>
+        </div>
+    </div>
+
     <script>
+        // Cache para PDFs
+        const pdfCache = new Map();
+
         // Verificar autenticación al cargar la página
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('token');
@@ -80,9 +93,117 @@
             }
         });
 
+        // Función para generar vista previa optimizada de PDF
+        function generarVistaPreviaPDF(data, mimeType, id) {
+            return `
+                <div class="file-preview">
+                    <div class="pdf-preview-placeholder" data-pdf-id="${id}">
+                        <i class="fas fa-file-pdf" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        <p>Vista previa PDF</p>
+                        <button onclick="cargarPDFCompleto('${id}', '${data}', '${mimeType}')" class="btn-secondary">
+                            Cargar PDF
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Función para cargar PDF completo
+        async function cargarPDFCompleto(id, data, mimeType) {
+            const placeholder = document.querySelector(`[data-pdf-id="${id}"]`);
+            if (!placeholder) return;
+
+            // Verificar si ya está en caché
+            if (pdfCache.has(id)) {
+                placeholder.innerHTML = pdfCache.get(id);
+                return;
+            }
+
+            // Mostrar indicador de carga
+            placeholder.innerHTML = `
+                <div class="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando PDF...</p>
+                </div>
+            `;
+
+            try {
+                // Intentar cargar el PDF de diferentes maneras
+                const pdfUrl = `data:${mimeType};base64,${data}`;
+                
+                // Verificar si el PDF es válido
+                const response = await fetch(pdfUrl);
+                if (!response.ok) throw new Error('PDF inválido');
+
+                const html = `
+                    <iframe src="${pdfUrl}" 
+                            class="pdf-preview" 
+                            title="Vista previa PDF"
+                            loading="lazy"></iframe>
+                `;
+
+                placeholder.innerHTML = html;
+                pdfCache.set(id, html);
+            } catch (error) {
+                console.error('Error al cargar PDF:', error);
+                placeholder.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error al cargar el PDF. <a href="data:${mimeType};base64,${data}" download="archivo.pdf">Descargar</a></p>
+                    </div>
+                `;
+            }
+        }
+
+        // Función para eliminar publicación
+        async function eliminarPublicacion(id) {
+            if (!confirm('¿Estás seguro de que deseas eliminar esta publicación?')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`http://localhost:3000/publicacion/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al eliminar la publicación');
+                }
+
+                // Eliminar la publicación de la vista
+                const fila = document.querySelector(`tr[data-publicacion-id="${id}"]`);
+                if (fila) {
+                    fila.remove();
+                    // Si no hay más publicaciones, mostrar mensaje
+                    const tbody = document.querySelector('.publications-table tbody');
+                    if (!tbody.children.length) {
+                        document.getElementById('publicacionesContainer').innerHTML = `
+                            <div class="no-publications">
+                                <i class="fas fa-newspaper" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                                <p>No hay publicaciones disponibles en este momento.</p>
+                                <button onclick="cargarPublicaciones()" class="btn-primary" style="margin-top: 1rem;">
+                                    <i class="fas fa-sync"></i> Actualizar
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'Error al eliminar la publicación');
+            }
+        }
+
         async function cargarPublicaciones() {
             try {
                 const token = localStorage.getItem('token');
+                const usuario = JSON.parse(localStorage.getItem('usuario'));
                 const res = await fetch('http://localhost:3000/obtener-publicaciones', {
                     method: 'GET',
                     headers: {
@@ -118,7 +239,6 @@
                     return;
                 }
 
-                // Crear tabla HTML
                 let tablaHTML = `
                     <table class="publications-table">
                         <thead>
@@ -128,6 +248,7 @@
                                 <th>Fecha</th>
                                 <th>Autor</th>
                                 <th>Archivos</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,15 +264,43 @@
                     });
 
                     let archivosHTML = '';
-                    if (pub.archivos) {
+                    if (pub.archivo) {
                         try {
-                            const base64Data = pub.archivos;
-                            archivosHTML = `
-                                <a href="data:application/octet-stream;base64,${base64Data}" 
-                                   download="archivo_${pub.id_publicacion}"
-                                   class="download-link">
-                                    <i class="fas fa-file-download"></i> Descargar
-                                </a>
+                            const { data, mimeType } = pub.archivo;
+                            
+                            if (mimeType.startsWith('image/')) {
+                                archivosHTML = `
+                                    <div class="file-preview">
+                                        <img src="data:${mimeType};base64,${data}" 
+                                             alt="Vista previa" 
+                                             class="preview-image"
+                                             loading="lazy"
+                                             onclick="openFilePreview('${data}', '${mimeType}')">
+                                    </div>
+                                `;
+                            } else if (mimeType === 'application/pdf') {
+                                archivosHTML = generarVistaPreviaPDF(data, mimeType, pub.id_publicacion);
+                            } else {
+                                archivosHTML = `
+                                    <div class="file-preview">
+                                        <i class="fas fa-file-alt"></i>
+                                        <p>Archivo adjunto</p>
+                                    </div>
+                                `;
+                            }
+                            
+                            archivosHTML += `
+                                <div class="file-actions">
+                                    <a href="data:${mimeType};base64,${data}" 
+                                       download="archivo_${pub.id_publicacion}"
+                                       class="download-link">
+                                        <i class="fas fa-download"></i> Descargar
+                                    </a>
+                                    <button onclick="openFilePreview('${data}', '${mimeType}')" 
+                                            class="preview-link">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </div>
                             `;
                         } catch (error) {
                             console.error('Error al procesar archivo:', error);
@@ -161,13 +310,29 @@
                         archivosHTML = '<span class="no-file">Sin archivo</span>';
                     }
 
+                    // Verificar si el usuario actual es el autor o es administrador
+                    const esAutor = usuario.id_usuario === pub.autor;
+                    const esAdmin = usuario.id_perfil === 2;
+                    const puedeEliminar = esAutor || esAdmin;
+
+                    // Preparar botones de acción
+                    let botonesAccion = '';
+                    if (puedeEliminar) {
+                        botonesAccion = `
+                            <button onclick="eliminarPublicacion(${pub.id_publicacion})" class="btn-danger" title="${esAdmin ? 'Eliminar como administrador' : 'Eliminar tu publicación'}">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        `;
+                    }
+
                     tablaHTML += `
-                        <tr>
+                        <tr data-publicacion-id="${pub.id_publicacion}" ${esAutor ? 'class="publicacion-propia"' : ''}>
                             <td>${pub.id_publicacion}</td>
                             <td>${pub.contenido || 'Sin contenido'}</td>
                             <td>${fecha}</td>
-                            <td>${pub.autor || 'Desconocido'}</td>
+                            <td>${pub.nombre || 'Desconocido'} ${esAutor ? '<span class="badge-autor">Tú</span>' : ''}</td>
                             <td>${archivosHTML}</td>
+                            <td>${botonesAccion}</td>
                         </tr>
                     `;
                 });
@@ -247,7 +412,7 @@
             }
 
             try {
-                const res = await fetch('http://localhost:3000/crear-publicacion', {
+                const res = await fetch('http://localhost:3000/publicar', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -265,6 +430,92 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error al crear la publicación');
+            }
+        }
+
+        // Función para detectar el tipo MIME del archivo
+        function detectMimeType(base64String) {
+            try {
+                const header = atob(base64String).slice(0, 4);
+                const signatures = {
+                    '/9j/': 'image/jpeg',    // JPEG
+                    'iVBO': 'image/png',     // PNG
+                    'R0lG': 'image/gif',     // GIF
+                    'UklG': 'image/webp',    // WEBP
+                    'JVBERi0': 'application/pdf', // PDF
+                    'JVBER': 'application/pdf'    // PDF también
+                };
+                
+                for (let [signature, mimeType] of Object.entries(signatures)) {
+                    if (header.includes(signature)) {
+                        return mimeType;
+                    }
+                }
+                return 'application/octet-stream';
+            } catch (e) {
+                return 'application/octet-stream';
+            }
+        }
+
+        // Función para abrir la vista previa en modal
+        function openFilePreview(base64Data, mimeType) {
+            const modal = document.getElementById('previewModal') || createPreviewModal();
+            const previewContainer = modal.querySelector('.preview-container');
+            
+            if (mimeType.startsWith('image/')) {
+                previewContainer.innerHTML = `
+                    <img src="data:${mimeType};base64,${base64Data}" 
+                         alt="Vista previa" 
+                         class="full-preview-image">
+                `;
+            } else if (mimeType === 'application/pdf') {
+                previewContainer.innerHTML = `
+                    <iframe src="data:application/pdf;base64,${base64Data}" 
+                            class="full-preview-pdf" 
+                            title="Vista previa PDF"></iframe>
+                `;
+            } else {
+                previewContainer.innerHTML = `
+                    <div class="unsupported-file">
+                        <i class="fas fa-file-alt"></i>
+                        <p>Este tipo de archivo no se puede previsualizar</p>
+                    </div>
+                `;
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Función para crear el modal de vista previa
+        function createPreviewModal() {
+            const modal = document.createElement('div');
+            modal.id = 'previewModal';
+            modal.className = 'preview-modal';
+            modal.innerHTML = `
+                <div class="preview-modal-content">
+                    <button onclick="closePreviewModal()" class="close-preview">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="preview-container"></div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Cerrar modal al hacer clic fuera
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closePreviewModal();
+                }
+            });
+
+            return modal;
+        }
+
+        // Función para cerrar el modal de vista previa
+        function closePreviewModal() {
+            const modal = document.getElementById('previewModal');
+            if (modal) {
+                modal.style.display = 'none';
             }
         }
     </script>

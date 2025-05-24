@@ -318,7 +318,13 @@ body {
 }
 
 .publications-table td {
-    vertical-align: middle;
+    vertical-align: top;
+    padding: 15px;
+}
+
+.publications-table td:nth-child(2) {
+    min-width: 200px;
+    max-width: 400px;
 }
 
 /* Estilos para los enlaces de descarga */
@@ -326,16 +332,21 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    color: var(--primary-color);
-    text-decoration: none;
-    padding: 5px 10px;
+    padding: 8px 12px;
+    background-color: var(--primary-color);
+    color: white;
     border-radius: 5px;
-    transition: all 0.3s ease;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
 }
 
 .download-link:hover {
-    background-color: var(--secondary-color);
-    color: var(--primary-color);
+    background-color: #357abd;
+    color: white;
+}
+
+.download-link i {
+    font-size: 1.1rem;
 }
 
 /* Estilos para mensajes de estado */
@@ -384,4 +395,310 @@ body {
     max-width: 300px;
     white-space: normal;
     word-wrap: break-word;
+}
+
+/* Estilos para la vista previa de archivos */
+.file-preview {
+    margin: 10px 0;
+    text-align: center;
+    background: var(--secondary-color);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.preview-image:hover {
+    transform: scale(1.05);
+}
+
+/* Estilos optimizados para PDFs */
+.pdf-preview-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pdf-preview-placeholder:hover {
+    background: #e9ecef;
+    border-color: #357abd;
+    transform: translateY(-2px);
+}
+
+.pdf-preview-placeholder i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.pdf-preview-placeholder p {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.pdf-preview-placeholder button {
+    margin-top: 10px;
+    padding: 10px 20px;
+}
+
+/* Estilos para el mensaje de error de PDF */
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    color: var(--danger-color);
+    background: #fff5f5;
+    border-radius: 8px;
+    border: 1px solid var(--danger-color);
+}
+
+.error-message i {
+    font-size: 2rem;
+}
+
+.error-message a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.error-message a:hover {
+    text-decoration: underline;
+}
+
+.file-preview i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.file-preview p {
+    margin: 5px 0;
+    color: var(--text-color);
+}
+
+.file-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.download-link, .preview-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.download-link {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.preview-link {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.download-link:hover, .preview-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+/* Modal de vista previa */
+.preview-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.preview-modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.close-preview {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 2;
+}
+
+.close-preview:hover {
+    color: var(--primary-color);
+}
+
+.preview-container {
+    margin-top: 20px;
+}
+
+.full-preview-image {
+    max-width: 100%;
+    max-height: 80vh;
+    display: block;
+    margin: 0 auto;
+}
+
+.full-preview-pdf {
+    width: 100%;
+    height: 80vh;
+    border: none;
+}
+
+.unsupported-file {
+    text-align: center;
+    padding: 40px;
+}
+
+.unsupported-file i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.unsupported-file p {
+    color: var(--text-color);
+    font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .file-actions {
+        flex-direction: column;
+    }
+
+    .preview-modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .full-preview-pdf {
+        height: 60vh;
+    }
+}
+
+/* Estilos para botones de acción */
+.btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px var(--shadow-color);
+    opacity: 1;
+}
+
+/* Estilos mejorados para PDFs */
+.pdf-preview {
+    width: 100%;
+    height: 300px;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.pdf-preview:hover {
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+/* Estilos para publicaciones propias */
+.publicacion-propia {
+    background-color: rgba(74, 144, 226, 0.05);
+    transition: background-color 0.3s ease;
+}
+
+.publicacion-propia:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+}
+
+/* Badge para indicar publicación propia */
+.badge-autor {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+/* Tooltip personalizado */
+[title] {
+    position: relative;
+    cursor: help;
+}
+
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
 }
