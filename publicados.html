@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicaciones - RedSocialPro</title>
+    <link rel="stylesheet" href="publicados.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+        <div class="user-info">
+            <span id="userName" style="color: white; margin-right: 15px;">Usuario</span>
+            <button id="btnCerrarSesion" class="btn-action" type="button" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="publications-header">
+            <h2>Publicaciones</h2>
+            <button id="btnNuevaPublicacion" class="btn-primary">
+                <i class="fas fa-plus"></i> Nueva Publicación
+            </button>
+        </div>
+
+        <div id="publicacionesContainer" class="publications-grid">
+            <!-- Las publicaciones se cargarán aquí dinámicamente -->
+        </div>
+    </main>
+
+    <!-- Modal para nueva publicación -->
+    <div id="modalPublicacion" class="modal">
+        <div class="modal-content">
+            <h3>Nueva Publicación</h3>
+            <textarea id="contenidoPublicacion" placeholder="¿Qué quieres compartir?"></textarea>
+            <div class="file-upload">
+                <label for="archivoPublicacion">
+                    <i class="fas fa-paperclip"></i> Adjuntar archivo
+                </label>
+                <input type="file" id="archivoPublicacion" hidden>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn-primary" onclick="publicar()">Publicar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+            if (!token || !usuario) {
+                window.location.href = 'index.html?logout=true';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/verificar-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Token inválido');
+                }
+
+                document.getElementById('userName').textContent = usuario.nombre;
+                cargarPublicaciones();
+
+            } catch (error) {
+                console.error('Error al verificar token:', error);
+                window.location.href = 'index.html?logout=true';
+            }
+        });
+
+        async function cargarPublicaciones() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:3000/obtener-publicaciones', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        throw new Error('El servicio de publicaciones no está disponible temporalmente');
+                    } else if (res.status === 401) {
+                        localStorage.clear();
+                        window.location.href = 'index.html?logout=true';
+                        return;
+                    } else {
+                        throw new Error('Error al conectar con el servidor');
+                    }
+                }
+
+                const publicaciones = await res.json();
+                const container = document.getElementById('publicacionesContainer');
+                
+                if (!publicaciones || publicaciones.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-publications">
+                            <i class="fas fa-newspaper" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                            <p>No hay publicaciones disponibles en este momento.</p>
+                            <button onclick="cargarPublicaciones()" class="btn-primary" style="margin-top: 1rem;">
+                                <i class="fas fa-sync"></i> Actualizar
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Crear tabla HTML
+                let tablaHTML = `
+                    <table class="publications-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Contenido</th>
+                                <th>Fecha</th>
+                                <th>Autor</th>
+                                <th>Archivos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                publicaciones.forEach(pub => {
+                    const fecha = new Date(pub.fecha).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    let archivosHTML = '';
+                    if (pub.archivos) {
+                        try {
+                            const base64Data = pub.archivos;
+                            archivosHTML = `
+                                <a href="data:application/octet-stream;base64,${base64Data}" 
+                                   download="archivo_${pub.id_publicacion}"
+                                   class="download-link">
+                                    <i class="fas fa-file-download"></i> Descargar
+                                </a>
+                            `;
+                        } catch (error) {
+                            console.error('Error al procesar archivo:', error);
+                            archivosHTML = '<span class="error-text">Error al cargar archivo</span>';
+                        }
+                    } else {
+                        archivosHTML = '<span class="no-file">Sin archivo</span>';
+                    }
+
+                    tablaHTML += `
+                        <tr>
+                            <td>${pub.id_publicacion}</td>
+                            <td>${pub.contenido || 'Sin contenido'}</td>
+                            <td>${fecha}</td>
+                            <td>${pub.autor || 'Desconocido'}</td>
+                            <td>${archivosHTML}</td>
+                        </tr>
+                    `;
+                });
+
+                tablaHTML += `
+                        </tbody>
+                    </table>
+                `;
+
+                container.innerHTML = tablaHTML;
+
+            } catch (error) {
+                console.error('Error al cargar publicaciones:', error);
+                const container = document.getElementById('publicacionesContainer');
+                container.innerHTML = `
+                    <div class="error-message" style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                        <p>${error.message}</p>
+                        <button onclick="cargarPublicaciones()" class="btn-primary" style="margin-top: 1rem;">
+                            <i class="fas fa-sync"></i> Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Cargar publicaciones al iniciar
+        document.addEventListener('DOMContentLoaded', cargarPublicaciones);
+
+        async function cerrarSesion() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:3000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al cerrar sesión');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            }
+        }
+
+        // Funciones para el modal de nueva publicación
+        document.getElementById('btnNuevaPublicacion').addEventListener('click', () => {
+            document.getElementById('modalPublicacion').style.display = 'flex';
+        });
+
+        function cerrarModal() {
+            document.getElementById('modalPublicacion').style.display = 'none';
+            document.getElementById('contenidoPublicacion').value = '';
+            document.getElementById('archivoPublicacion').value = '';
+        }
+
+        async function publicar() {
+            const contenido = document.getElementById('contenidoPublicacion').value;
+            const archivo = document.getElementById('archivoPublicacion').files[0];
+            const token = localStorage.getItem('token');
+
+            if (!contenido.trim()) {
+                alert('Por favor, escribe algo para publicar');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('contenido', contenido);
+            if (archivo) {
+                formData.append('archivo', archivo);
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/crear-publicacion', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (!res.ok) {
+                    throw new Error('Error al crear la publicación');
+                }
+
+                cerrarModal();
+                cargarPublicaciones();
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al crear la publicación');
+            }
+        }
+    </script>
+</body>
+</html>

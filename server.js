@@ -2,283 +2,516 @@
 *****************************************************POR FAVOR DEJE COMENTADO EL PROGRAMA Y CADA PARTE FINALIZADA ************************************************************
 */
 const express = require('express');
-//Recibir peticiones CRUD   y enviar respuestas en formato de extension de datos por ejemplo JSON
 const cors = require('cors');
-//libreria para puertos
 const bcrypt = require('bcrypt');
-//Libreria que utilizamos para encriptar las claves del usuario y asi tener un minimo protocolo de seguridad
 const connection = require('./database');
-//llama al archivo database.js para conexion
-const app = express();
-//app es el componente que almacena las solicitudes de la base de datos por tanto se considera una variable puente entre los datos almacenados y lo programado
-//usamos el express para hacer peticiones a la base de datos
-const port = 3000;
-//puerto en el que se ejecuta el servidor 
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+const jwt = require('jsonwebtoken');
 
-// Configuración
+const app = express();
+const port = 3000;
+
+// Clave secreta para JWT
+const JWT_SECRET = 'tu_clave_secreta_muy_segura';
+
+// Middleware global
 app.use(cors());
 app.use(express.json());
 
-// Código para registro de administracion
-const Codigo_administraacion = 'ADMON123';
-
-// Middleware para verificar administracion
-function isAdmin(req, res, next) {
-    //Parametrizamos los datos que requerimos para verificacion y next para continuar
-    if (req.user && req.user.id_perfil === 2) {
-        //Si el usuario esta en estado 2=administrador podemos continuar
-        return next();
-    }
-    return res.status(403).json({ message: 'Acceso no autorizado' });
-    //si los parametros salen del condicional muestra al usuario que no esta autoorizado a ingresar
-}
-
-//El metodo de conexion a la base de datos para insertar documentos
-
-
-
-// Envio de datos
-app.post('/registro', async (req, res) => {
-    // post para envio y recibimiento de datos en este caso mediante async para sincronizar request y response
-    const { nombre, email, contrasena, id_perfil, adminCode } = req.body;
-    //agarra algunos de los datos del usuario que estan en la base de datos de la tabla usuario mas el codigo de administrador
-
-    // Validaciones básicas
-    if (!nombre || !email || !contrasena || !id_perfil) {
-        // Comprobacion de que los datos si estan registrados por el usuario
-        return res.status(400).json({ message: 'Todos los campos son obligatorios' });
-    }
-
-    // Validación especial para administrador
-    if (id_perfil === 2) {    //verifica que el usuario este en estado 2 o administrador
-        if (adminCode !== Codigo_administraacion) {
-            //Verfica que el codigo sea el correspondiente a administracion
-            return res.status(403).json({
-                //retorna el estado 403 problemas de autenticacion por rango lo traduce en formato json a Codigo incorrecto
-                message: 'Código de administrador incorrecto'
-            });
-        }
+// Middleware para verificar token
+const verificarToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ message: 'Token no proporcionado' });
     }
 
     try {
-        //                                                                      VERIFICACION DE ERRORRES
-        // Verificar si el email ya existe
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.usuario = decoded;
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: 'Token inválido' });
+    }
+};
+
+// Código especial para administradores
+const Codigo_administraacion = 'ADMON123';
+
+// Middleware para verificar si el usuario es administrador
+function isAdmin(req, res, next) {
+    if (req.user && req.user.id_perfil === 2) {
+        return next();
+    }
+    return res.status(403).json({ message: 'Acceso no autorizado' });
+}
+
+// Ruta para registro de usuarios
+app.post('/registro', async (req, res) => {
+    const { nombre, email, contrasena, id_perfil, adminCode } = req.body;
+
+    if (!nombre || !email || !contrasena || !id_perfil) {
+        return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    }
+
+    if (id_perfil === 2 && adminCode !== Codigo_administraacion) {
+        return res.status(403).json({ message: 'Código de administrador incorrecto' });
+    }
+
+    try {
         const ConsultaEmail = 'SELECT * FROM usuario WHERE email = ?';
-        //hace la consulta a la base de datos sobre el email
         connection.query(ConsultaEmail, [email], async (error, resultados) => {
-            //hace consulta con la conexion de la base de datos  email en este caso es un array ? para consulta de la base de datos
-            //  parametriza el objetor error y resultados 
             if (error) {
-                // condicional de error
                 console.error('Error al verificar email:', error);
-                //mostrar en la consola que no se pudo verificar el email + parametro error
                 return res.status(500).json({ message: 'Error en el servidor' });
             }
 
             if (resultados.length > 0) {
-                //revisa si en el array esta o no el dato que se intenta insertar
-                //comprueba si el email ya existe o no
                 return res.status(400).json({ message: 'El email ya está registrado' });
             }
 
-            // Encriptar contraseña
             const var_hashercontrasena = await bcrypt.hash(contrasena, 10);
-            // Variable constante parametrizadora de la contraseña hasheandola en este caso nivel 10
-            // Insertar usuario
             const Consultainsertar = 'INSERT INTO usuario (nombre, email, contrasena, id_perfil) VALUES (?, ?, ?, ?)';
-            // Inserta los datos del usuario entre ellos su contraseña
             connection.query(Consultainsertar, [nombre, email, var_hashercontrasena, id_perfil], (err, results) => {
-                // consulta de conexion a la base de datos verificando variables  
                 if (err) {
-                    //encapsula el error para registro de usuario
-                    //si sucede un error muestra el mensaje
                     console.error('Error al registrar usuario:', err);
                     return res.status(500).json({
-                        // mostrar error al usuario  500: significa un error generico  cuando no se pudo determinar el fallo
                         message: 'Error al registrar el usuario',
                         error: err.sqlMessage || err.message
-                        //Almacena  si el error Sucedio en la base de datos o en server.js
                     });
                 }
 
-                // Obtener datos del usuario recién creado sin la contraseña
                 const Consultatraerusuario = 'SELECT id, nombre, email, id_perfil FROM usuario WHERE id = ?';
                 connection.query(Consultatraerusuario, [results.insertId], (err, userResults) => {
-                    //realiza la conexion a la base de datos con la consulta almacenada mas la consulta de results.insertid=(id=?)
                     if (err || userResults.length === 0) {
-                        //Comprueba en la base de datos si no ocurrio ningun error y si no devolvio ningun resultado
                         return res.status(201).json({ message: 'Usuario registrado exitosamente' });
                     }
                     res.status(201).json({
-                        //establece el estado de HTTP aa 201 para formato creado informa al usuario de que se creo mediante este estado traduciendolo a JSON
                         message: 'Usuario registrado exitosamente',
                         usuario: userResults[0]
-                        //concatena los dtos del usuario y recorre a el nivel del id o la primera variable 
                     });
                 });
             });
         });
     } catch (error) {
-        //encapsula el error en la variable error
         console.error('Error en el servidor:', error);
-        //muestra a la  consola el error
         res.status(500).json({ message: 'Error en el servidor' });
-        //responde en estado 500 es decir en error inesperado con mensaje error en el servidor
     }
 });
 
-// Ruta para login
+// Ruta para login de usuarios
 app.post('/login', async (req, res) => {
-    //sincroniza  la informacion de la base de datos y la forma de responder del programa
     const { usuario, password, id_perfil } = req.body;
-    //crea como constante porque son datos que no cambian ya que estan registrados en una base de datos y los mete al pedido de la base de datos
+
     if (!usuario || !password) {
-        //si usuario o contraseña esta vacio muestra lo que esta adentro del condicionnal if
         return res.status(400).json({ message: 'Debe ingresar nombre/email y contraseña' });
-        //retorna en respuesta al protocolo que la respuesta es incorrecta o no se puede procesar error 400 lo pasa a formato JSON y le dice al cliente que debe rellenar el campo vacio
     }
 
     try {
-        //intentar
+        // Primero buscamos el usuario sin JOIN para evitar problemas con el perfil
         const query = 'SELECT * FROM usuario WHERE (email = ? OR nombre = ?) AND id_perfil = ?';
-        //hace la consultaa por email o nombre y id_perfil variables de la tabla Usuario
         connection.query(query, [usuario, usuario, id_perfil], async (err, results) => {
-            //consultas de conexion  con la base de datos las probabilidades para el campo de usuario y sincroniza entre la variable error y resultados
             if (err) {
-                //error 
                 console.error('Error en la consulta:', err);
-                //imprime el error avisando que es error a la consola
                 return res.status(500).json({
-                    //si no puede responder pasa el error a estado 500 y l traduce a json lo muestra al usuario como error en el servidor
                     message: 'Error en el servidor',
                     error: err.sqlMessage || err.message
-                    //Almacena si el error sucedio en la base de datos o en server.js 
                 });
             }
 
             if (results.length === 0) {
-                //si al ingresar la consulta muestra 0 o no aparece dentro de la base de datos sucede el condicionnal
                 return res.status(404).json({
-                    //retorna el error 404 no encontrado o no existe encapsula el error de que no hay o no existen registros
-                    message: id_perfil === 2 ?
-                        //este mensaje se aclara que es para el campo de id_perfil=2 lo que quiere decir que es un perfil de administrador
-                        'Administrador no encontrado o credenciales incorrectas' :
-                        'Usuario no encontrado'
-                    //Muestra mensajes para el problema
+                    message: id_perfil === 2 ? 'Administrador no encontrado o credenciales incorrectas' : 'Usuario no encontrado'
                 });
             }
 
             const usuarioDB = results[0];
-            //almacena en la consulta olos resultados y revisar el campo id de la tabla perfil
-            // Verificar contraseña
-            const passwordMatch = await bcrypt.compare(password, usuarioDB.contrasena);
-            //almacena una comparacion con la contraseña digitada y hash o  la contraseña ya establecida para revisar si coinciden y permitir el paso al usuario
-            if (!passwordMatch) {
-                //en caso de que no coincidan las contraseñas condicional if se encargara de enncapsular el error 401: problema de credenciales faltantes/invalidas y le muestra el mensaje al usuario mediante un JSON
-                return res.status(401).json({ message: 'Credenciales inválidas' });
+            
+            try {
+                const passwordMatch = await bcrypt.compare(password, usuarioDB.contrasena);
+                if (!passwordMatch) {
+                    return res.status(401).json({ message: 'Credenciales inválidas' });
+                }
+
+                // Generar token JWT con el id_usuario
+                const token = jwt.sign(
+                    { 
+                        id: usuarioDB.id_usuario,
+                        nombre: usuarioDB.nombre,
+                        email: usuarioDB.email,
+                        id_perfil: usuarioDB.id_perfil,
+                        timestamp: Date.now() // Agregamos timestamp para hacer el token único
+                    },
+                    JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+
+                // Crear un objeto de usuario sin la contraseña
+                const usuarioResponse = {
+                    id_usuario: usuarioDB.id_usuario,
+                    nombre: usuarioDB.nombre,
+                    email: usuarioDB.email,
+                    id_perfil: usuarioDB.id_perfil
+                };
+
+                // Establecer headers de caché para evitar problemas
+                res.set({
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                });
+
+                res.json({
+                    message: 'Inicio de sesión exitoso',
+                    usuario: usuarioResponse,
+                    token
+                });
+            } catch (bcryptError) {
+                console.error('Error al verificar contraseña:', bcryptError);
+                return res.status(500).json({ message: 'Error al verificar credenciales' });
             }
-
-            delete usuarioDB.contrasena;
-            //Elimina la contraseña del objeto de usuarioDB para evitar mostrarla como respuesta en el JSON al cliente
-
-            res.json({
-                //responde al usuario con el JSON como inicio exitoso ademas de almacenar el objeto de USUARIODB en usuario
-                message: 'Inicio de sesión exitoso',
-                usuario: usuarioDB
-            });
         });
     } catch (error) {
-        //encapsulaa el error al objeto error 
         console.error('Error en el servidor:', error);
-        //mediante la consola informa de que ha sucedido un error 
         res.status(500).json({ message: 'Error en el servidor' });
-        //responde con el estado de error 500: cuando no se sabe que sucedio o no supo encapsular el desarrollador  mostrandole al usuario por el protcolo JSON de que sucedio un error en el servidor
     }
 });
-// ———————— Subida de archivos y guardado en BD ————————
-// Asegurar carpeta uploads/
-const path = require('path');
-const fs = require('fs');
+
+// Configuración de directorio para archivos
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
-// Configurar Multer
-const multer = require('multer');
+// Configuración de multer para archivos
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage });
 
-// Ruta única POST /publicar
-app.post('/publicar', upload.single('archivo'), (req, res) => {
-    const { contenido, autor } = req.body;
-    const archivo = req.file;           // multer devuelve aquí el archivo
-    // Validación básica
-    if (!contenido?.trim() || isNaN(parseInt(autor)) || parseInt(autor) <= 0) {
-        return res.status(400).json({ error: 'Contenido o autor inválido' });
+// Ruta para publicar contenido con archivo
+app.post('/publicar', verificarToken, upload.single('archivo'), (req, res) => {
+    const { contenido } = req.body;
+    const archivo = req.file;
+
+    if (!contenido?.trim()) {
+        return res.status(400).json({ error: 'El contenido es obligatorio' });
     }
-    // Leer blob (si hay archivo)
-    let blob = null;
-    if (archivo) {
-        const fullPath = archivo.path;    // ruta dentro de /uploads
-        blob = fs.readFileSync(fullPath);
-    }
-    // Insert en la tabla publicacion
-    const sql = `
-    INSERT INTO publicacion (contenido, archivos, autor)
-    VALUES (?, ?, ?)
-  `;
-    connection.query(sql, [contenido.trim(), blob, autor], (err, result) => {
+
+    // Primero verificamos si el usuario tiene un perfil
+    const checkPerfilQuery = 'SELECT id_perfil FROM perfil WHERE id_perfil = ?';
+    connection.query(checkPerfilQuery, [req.usuario.id], (err, perfilResults) => {
         if (err) {
-            console.error('Error al guardar publicación:', err);
+            console.error('Error al verificar perfil:', err);
             return res.status(500).json({ error: 'Error de base de datos' });
         }
-        res.status(201).json({
-            message: 'Publicación guardada',
-            id_publicacion: result.insertId
-        });
+
+        // Si no existe el perfil, lo creamos
+        if (perfilResults.length === 0) {
+            const createPerfilQuery = 'INSERT INTO perfil (id_perfil) VALUES (?)';
+            connection.query(createPerfilQuery, [req.usuario.id], (err, createResults) => {
+                if (err) {
+                    console.error('Error al crear perfil:', err);
+                    return res.status(500).json({ error: 'Error al crear perfil' });
+                }
+                insertarPublicacion();
+            });
+        } else {
+            insertarPublicacion();
+        }
     });
-});
 
+    function insertarPublicacion() {
+        let blob = null;
+        if (archivo) {
+            const fullPath = archivo.path;
+            blob = fs.readFileSync(fullPath);
+        }
 
-
-app.post('/publicar', upload.single('archivo'), (req, res) => {
-    const { contenido, autor } = req.body;
-    const archivo = req.file; // undefined si no sube ningún archivo
-
-    // Validación básica
-    if (!contenido?.trim() || isNaN(parseInt(autor)) || parseInt(autor) <= 0) {
-        return res.status(400).json({ error: 'Contenido o autor inválido' });
+        const sql = 'INSERT INTO publicacion (contenido, archivos, autor, fecha) VALUES (?, ?, ?, NOW())';
+        connection.query(sql, [contenido.trim(), blob, req.usuario.id], (err, result) => {
+            if (err) {
+                console.error('Error al guardar publicación:', err);
+                return res.status(500).json({ error: 'Error de base de datos' });
+            }
+            res.status(201).json({
+                message: 'Publicación guardada',
+                id_publicacion: result.insertId,
+                autor: req.usuario.id
+            });
+        });
     }
-
-    // Aquí guardas en la base de datos, por ejemplo:
-    // db.query('INSERT INTO publicacion (contenido, archivos, autor) VALUES (?, ?, ?)', 
-    //          [contenido, archivo?.buffer || null, autor]);
-
-    console.log('Publicación recibida:', { contenido, autor, archivoName: archivo?.originalname });
-    res.status(200).json({ message: 'Publicación recibida correctamente' });
 });
 
-
-
-
-// Ruta de ejemplo solo para admin
+// Ruta protegida solo para administradores
 app.get('/admin/dashboard', isAdmin, (req, res) => {
-    //manda traer el app al panel de administracion, revisa si es administrador mediante la funcion establecida y paramtriza los datos a enviar y la forma de responder 
     res.json({
-        //responde mediente JSON como: bienvenido al panel de administracion 
         message: 'Bienvenido al panel de administración',
         usuario: req.user
-        //almacena los datos de usuario en la variable usuario 
     });
 });
 
+// Ruta para verificar token
+app.get('/verificar-token', verificarToken, (req, res) => {
+    res.json({ valid: true });
+});
 
+// Ruta para cerrar sesión
+app.post('/logout', verificarToken, (req, res) => {
+    try {
+        // Establecer headers de caché para evitar problemas
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        });
+
+        res.json({ 
+            message: 'Sesión cerrada exitosamente',
+            success: true 
+        });
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+        res.status(500).json({ message: 'Error al cerrar sesión' });
+    }
+});
+
+// Función auxiliar para convertir BLOB a base64
+function blobToBase64(blob) {
+    return blob ? Buffer.from(blob).toString('base64') : null;
+}
+
+// Rutas para el perfil
+app.get('/perfil/:id', verificarToken, (req, res) => {
+    const id_usuario = req.params.id;
+    
+    // Verificar que el usuario solo pueda ver su propio perfil
+    if (req.usuario.id.toString() !== id_usuario) {
+        return res.status(403).json({ message: 'No autorizado para ver este perfil' });
+    }
+
+    // Consulta principal del perfil
+    const sqlPerfil = `
+        SELECT p.*, 
+               pub.contenido as publicacion_contenido, 
+               pub.archivos as publicacion_archivos,
+               m.contenido as mensaje_contenido,
+               pos.curriculum, 
+               pos.carta_presentacion
+        FROM perfil p
+        LEFT JOIN publicacion pub ON p.id_publicacion = pub.id_publicacion
+        LEFT JOIN mensaje m ON p.id_mensaje = m.idMensaje
+        LEFT JOIN postulacion pos ON p.id_postulacion = pos.id_postulacion
+        WHERE p.id_perfil = ?
+    `;
+
+    connection.query(sqlPerfil, [id_usuario], (err, results) => {
+        if (err) {
+            console.error('Error al obtener perfil:', err);
+            return res.status(500).json({ message: 'Error al obtener el perfil' });
+        }
+
+        if (results.length === 0) {
+            // Si no existe el perfil, devolver uno vacío
+            return res.json({
+                experiencia: '',
+                educacion: '',
+                habilidades: '',
+                resumen: '',
+                foto: null,
+                publicaciones: [],
+                mensajes: [],
+                postulaciones: []
+            });
+        }
+
+        // Procesar el resultado para convertir BLOBs a base64
+        const perfil = results[0];
+        const perfilJSON = {
+            experiencia: perfil.experiencia || '',
+            educacion: perfil.educacion || '',
+            habilidades: perfil.habilidades || '',
+            resumen: perfil.resumen || '',
+            foto: blobToBase64(perfil.foto),
+            publicacion: perfil.publicacion_contenido ? {
+                contenido: perfil.publicacion_contenido,
+                archivos: blobToBase64(perfil.publicacion_archivos)
+            } : null,
+            mensaje: perfil.mensaje_contenido ? {
+                contenido: blobToBase64(perfil.mensaje_contenido)
+            } : null,
+            postulacion: {
+                curriculum: blobToBase64(perfil.curriculum),
+                carta_presentacion: blobToBase64(perfil.carta_presentacion)
+            }
+        };
+
+        res.json(perfilJSON);
+    });
+});
+
+app.put('/perfil/:id', verificarToken, (req, res) => {
+    const id_usuario = req.params.id;
+    const { resumen, experiencia, educacion, habilidades } = req.body;
+
+    // Verificar que el usuario solo pueda actualizar su propio perfil
+    if (req.usuario.id.toString() !== id_usuario) {
+        return res.status(403).json({ message: 'No autorizado para actualizar este perfil' });
+    }
+
+    // Primero verificar si existe el perfil
+    const checkSql = 'SELECT id_perfil FROM perfil WHERE id_perfil = ?';
+    connection.query(checkSql, [id_usuario], (err, results) => {
+        if (err) {
+            console.error('Error al verificar perfil:', err);
+            return res.status(500).json({ message: 'Error al verificar el perfil' });
+        }
+
+        if (results.length === 0) {
+            // Si no existe, crear nuevo perfil
+            const insertSql = 'INSERT INTO perfil (id_perfil, resumen, experiencia, educacion, habilidades) VALUES (?, ?, ?, ?, ?)';
+            connection.query(insertSql, [id_usuario, resumen, experiencia, educacion, habilidades], (err) => {
+                if (err) {
+                    console.error('Error al crear perfil:', err);
+                    return res.status(500).json({ message: 'Error al crear el perfil' });
+                }
+                res.json({ 
+                    message: 'Perfil creado exitosamente',
+                    perfil: {
+                        resumen,
+                        experiencia,
+                        educacion,
+                        habilidades
+                    }
+                });
+            });
+        } else {
+            // Si existe, actualizar
+            const updateSql = 'UPDATE perfil SET resumen = ?, experiencia = ?, educacion = ?, habilidades = ? WHERE id_perfil = ?';
+            connection.query(updateSql, [resumen, experiencia, educacion, habilidades, id_usuario], (err) => {
+                if (err) {
+                    console.error('Error al actualizar perfil:', err);
+                    return res.status(500).json({ message: 'Error al actualizar el perfil' });
+                }
+                res.json({ 
+                    message: 'Perfil actualizado exitosamente',
+                    perfil: {
+                        resumen,
+                        experiencia,
+                        educacion,
+                        habilidades
+                    }
+                });
+            });
+        }
+    });
+});
+
+app.put('/perfil/:id/foto', verificarToken, (req, res) => {
+    const id_usuario = req.params.id;
+    const { foto } = req.body;
+
+    // Verificar que el usuario solo pueda actualizar su propia foto
+    if (req.usuario.id.toString() !== id_usuario) {
+        return res.status(403).json({ message: 'No autorizado para actualizar esta foto' });
+    }
+
+    // Convertir la cadena base64 a un buffer
+    let fotoBuffer;
+    try {
+        fotoBuffer = Buffer.from(foto, 'base64');
+    } catch (error) {
+        console.error('Error al procesar la imagen:', error);
+        return res.status(400).json({ message: 'Formato de imagen inválido' });
+    }
+
+    // Primero verificar si existe el perfil
+    const checkSql = 'SELECT id_perfil FROM perfil WHERE id_perfil = ?';
+    connection.query(checkSql, [id_usuario], (err, results) => {
+        if (err) {
+            console.error('Error al verificar perfil:', err);
+            return res.status(500).json({ message: 'Error al verificar el perfil' });
+        }
+
+        if (results.length === 0) {
+            // Si no existe, crear nuevo perfil con la foto
+            const insertSql = 'INSERT INTO perfil (id_perfil, foto) VALUES (?, ?)';
+            connection.query(insertSql, [id_usuario, fotoBuffer], (err) => {
+                if (err) {
+                    console.error('Error al crear perfil con foto:', err);
+                    return res.status(500).json({ message: 'Error al guardar la foto' });
+                }
+                res.json({ 
+                    message: 'Foto guardada exitosamente',
+                    foto: foto // Devolvemos la foto en base64
+                });
+            });
+        } else {
+            // Si existe, actualizar la foto
+            const updateSql = 'UPDATE perfil SET foto = ? WHERE id_perfil = ?';
+            connection.query(updateSql, [fotoBuffer, id_usuario], (err) => {
+                if (err) {
+                    console.error('Error al actualizar foto:', err);
+                    return res.status(500).json({ message: 'Error al actualizar la foto' });
+                }
+                res.json({ 
+                    message: 'Foto actualizada exitosamente',
+                    foto: foto // Devolvemos la foto en base64
+                });
+            });
+        }
+    });
+});
+
+// Ruta para obtener documentos específicos
+app.get('/perfil/:id/documentos/:tipo', verificarToken, (req, res) => {
+    const id_usuario = req.params.id;
+    const tipo = req.params.tipo;
+    
+    // Verificar autorización
+    if (req.usuario.id.toString() !== id_usuario) {
+        return res.status(403).json({ message: 'No autorizado para ver estos documentos' });
+    }
+
+    let sql;
+    let params = [id_usuario];
+
+    switch(tipo) {
+        case 'curriculum':
+        case 'carta_presentacion':
+            sql = `SELECT ${tipo} FROM postulacion WHERE id_postulacion IN (SELECT id_postulacion FROM perfil WHERE id_perfil = ?)`;
+            break;
+        case 'publicaciones':
+            sql = 'SELECT contenido, archivos, fecha FROM publicacion WHERE id_publicacion IN (SELECT id_publicacion FROM perfil WHERE id_perfil = ?)';
+            break;
+        case 'mensajes':
+            sql = 'SELECT contenido, fecha_envio FROM mensaje WHERE idMensaje IN (SELECT id_mensaje FROM perfil WHERE id_perfil = ?)';
+            break;
+        default:
+            return res.status(400).json({ message: 'Tipo de documento no válido' });
+    }
+
+    connection.query(sql, params, (err, results) => {
+        if (err) {
+            console.error(`Error al obtener ${tipo}:`, err);
+            return res.status(500).json({ message: `Error al obtener ${tipo}` });
+        }
+
+        // Convertir BLOBs a base64
+        const documentos = results.map(doc => {
+            const docProcessed = { ...doc };
+            if (doc.contenido) docProcessed.contenido = blobToBase64(doc.contenido);
+            if (doc.archivos) docProcessed.archivos = blobToBase64(doc.archivos);
+            if (doc[tipo]) docProcessed[tipo] = blobToBase64(doc[tipo]);
+            return docProcessed;
+        });
+
+        res.json(documentos);
+    });
+});
 
 // Iniciar servidor
 app.listen(port, () => {
-    //manda la aplicacion a escucharse en el puerto correspondiente enviar 
     console.log(`Servidor escuchando en el puerto ${port}`);
-    //se resume a que le muestra al programador el puerto en el que se esta ejecutando el programa pero sin el app.listen el app no escucha escucharia el puerto
 });

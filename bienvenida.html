@@ -7,19 +7,136 @@
     <!-- Sección de metadatos y recursos del documento -->
     <meta charset="UTF-8">
     <!-- Especifica la codificación de caracteres como UTF-8 (incluye caracteres especiales y acentos) -->
-    <title>Bienvenida</title>
-    <!-- Título que aparece en la pestaña del navegador -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenida - RedSocialPro</title>
     <link rel="stylesheet" href="bienvenida.css">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 </head>
 
 <body>
-    <label for="desplegable" id="label-desplegable">Menu <br> </label>
-    <!-- Contenido visible de la página -->
-    <button onclick="window.location.href='publicacion.html'">
-        Publicaciones
-    </button>
+    <header class="header">
+        <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+        <div class="user-info">
+            <span id="userName" style="color: white; margin-right: 15px;">Usuario</span>
+            <button id="btnCerrarSesion" class="btn-action" type="button" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
 
+    <main class="main-content">
+        <div class="welcome-message">
+            <h2>¡Bienvenido/a a RedSocialPro!</h2>
+            <p>Conecta, comparte y crece profesionalmente con nuestra comunidad.</p>
+        </div>
+
+        <div class="welcome-grid">
+            <a href="perfil.html" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 class="feature-title">Perfil</h3>
+                <p class="feature-description">
+                    Gestiona tu perfil profesional y comparte tus logros y experiencias.
+                </p>
+            </a>
+
+            <a href="publicacion.html" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3 class="feature-title">Publicaciones</h3>
+                <p class="feature-description">
+                    Comparte y descubre contenido relevante para tu desarrollo profesional.
+                </p>
+            </a>
+
+            <a href="mensajes.html" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="feature-title">Aprende</h3>
+                <p class="feature-description">
+                    Comparte conocimientos y aprende de las experiencias de otros profesionales.
+                </p>
+            </a>
+
+            <a href="publicados.html" class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Crece</h3>
+                <p class="feature-description">
+                    Desarrolla tu carrera profesional y alcanza tus metas.
+                </p>
+            </a>
+        </div>
+    </main>
+
+    <script>
+        // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+            if (!token || !usuario) {
+                window.location.href = 'index.html?logout=true';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/verificar-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Token inválido');
+                }
+
+                // Mostrar nombre del usuario
+                document.getElementById('userName').textContent = usuario.nombre;
+
+            } catch (error) {
+                console.error('Error al verificar token:', error);
+                window.location.href = 'index.html?logout=true';
+            }
+        });
+
+        async function cerrarSesion() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'index.html?logout=true';
+                    return;
+                }
+
+                const res = await fetch('http://localhost:3000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    console.log('Sesión cerrada exitosamente');
+                } else {
+                    console.error('Error al cerrar sesión:', data.message);
+                }
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+            } finally {
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            }
+        }
+    </script>
 </body>
 
 </html>

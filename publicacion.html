@@ -11,7 +11,7 @@
 <body>
     <div class="form-container">
         <h1>Nueva Publicación</h1>
-        <form id="publicacionForm" action="http://localhost/publicar" method="POST" enctype="multipart/form-data">
+        <form id="publicacionForm">
             <!-- Contenido -->
             <div class="form-group">
                 <label for="contenido">Contenido:</label>
@@ -27,13 +27,6 @@
                 <p id="archivo-error" class="error-message hidden">Solo se permiten archivos de imagen o PDF.</p>
             </div>
 
-            <!-- Autor -->
-            <div class="form-group">
-                <label for="autor">ID del Autor:</label>
-                <input type="number" id="autor" name="autor" min="1" required aria-describedby="autor-error">
-                <p id="autor-error" class="error-message hidden">El ID del autor debe ser un número positivo.</p>
-            </div>
-
             <!-- Botones -->
             <div class="button-group">
                 <button type="submit">Publicar</button>
@@ -44,8 +37,15 @@
 
     <!-- Script con un solo método -->
     <script>
-
+        // Verificar autenticación al cargar la página
         document.addEventListener('DOMContentLoaded', function () {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Debe iniciar sesión para realizar publicaciones');
+                window.location.href = 'index.html';
+                return;
+            }
+
             const form = document.getElementById('publicacionForm');
 
             form.addEventListener('submit', async function (event) {
@@ -53,26 +53,20 @@
 
                 let isValid = true;
                 const contenido = document.getElementById('contenido');
-                const autor = document.getElementById('autor');
                 const archivo = document.getElementById('archivo');
 
                 const contenidoError = document.getElementById('contenido-error');
-                const autorError = document.getElementById('autor-error');
                 const archivoError = document.getElementById('archivo-error');
 
                 // Limpiar errores
-                [contenidoError, autorError, archivoError].forEach(el => el.classList.add('hidden'));
+                [contenidoError, archivoError].forEach(el => el.classList.add('hidden'));
 
                 // Validaciones
                 if (!contenido.value.trim()) {
                     contenidoError.classList.remove('hidden');
                     isValid = false;
                 }
-                const autorValue = parseInt(autor.value);
-                if (isNaN(autorValue) || autorValue <= 0) {
-                    autorError.classList.remove('hidden');
-                    isValid = false;
-                }
+
                 if (archivo.files.length > 0) {
                     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
                     if (!validTypes.includes(archivo.files[0].type)) {
@@ -85,30 +79,44 @@
                 // Armar FormData
                 const formData = new FormData();
                 formData.append('contenido', contenido.value.trim());
-                formData.append('autor', autor.value);
                 if (archivo.files.length) {
                     formData.append('archivo', archivo.files[0]);
                 }
 
-                // Aquí pones tu fetch al puerto 3000
                 try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        alert('Su sesión ha expirado. Por favor, vuelva a iniciar sesión.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
                     const res = await fetch('http://localhost:3000/publicar', {
                         method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
                         body: formData
                     });
+
                     if (res.ok) {
                         alert('¡Publicado con éxito!');
                         form.reset();
                     } else {
-                        const err = await res.text();
-                        alert('Error al publicar: ' + err);
+                        const data = await res.json();
+                        if (res.status === 401) {
+                            alert('Su sesión ha expirado. Por favor, vuelva a iniciar sesión.');
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('usuario');
+                            window.location.href = 'index.html';
+                        } else {
+                            alert('Error al publicar: ' + (data.message || 'Error desconocido'));
+                        }
                     }
                 } catch (e) {
                     alert('Error de red: ' + e.message);
                 }
             });
         });
-
-
     </script>
 </body>

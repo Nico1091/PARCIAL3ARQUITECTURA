@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - RedSocialPro</title>
+    <link rel="stylesheet" href="perfil.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav-menu container">
+            <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+            <div class="user-menu">
+                <button class="btn btn-secondary" onclick="window.location.href='bienvenida.html'">Inicio</button>
+                <button class="btn btn-secondary" id="logoutBtn">Cerrar Sesión</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="profile-container">
+            <div id="statusMessage" class="message" style="display: none;"></div>
+            
+            <div class="profile-header">
+                <div class="profile-photo-container">
+                    <img id="profilePhoto" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Foto de perfil" class="profile-photo">
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('photoInput').click()">Cambiar foto</button>
+                </div>
+                <div class="profile-info">
+                    <h2 id="userName">Cargando...</h2>
+                    <p id="userEmail">Cargando...</p>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3 class="section-title">Resumen</h3>
+                <div class="form-group">
+                    <label class="form-label" for="resumen">Cuéntanos sobre ti</label>
+                    <textarea id="resumen" name="resumen" class="form-textarea" placeholder="Escribe un resumen sobre ti..."></textarea>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3 class="section-title">Experiencia</h3>
+                <div class="form-group">
+                    <label class="form-label" for="experiencia">Experiencia Laboral</label>
+                    <textarea id="experiencia" name="experiencia" class="form-textarea" placeholder="Describe tu experiencia laboral..."></textarea>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3 class="section-title">Educación</h3>
+                <div class="form-group">
+                    <label class="form-label" for="educacion">Formación Académica</label>
+                    <textarea id="educacion" name="educacion" class="form-textarea" placeholder="Describe tu formación académica..."></textarea>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3 class="section-title">Habilidades</h3>
+                <div class="form-group">
+                    <label class="form-label" for="habilidades">Habilidades y Competencias</label>
+                    <textarea id="habilidades" name="habilidades" class="form-textarea" placeholder="Lista tus habilidades y competencias..."></textarea>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3 class="section-title">Documentos y Archivos</h3>
+                <div class="documents-container">
+                    <div class="document-section">
+                        <h4>Curriculum y Carta de Presentación</h4>
+                        <div id="postulacionDocs" class="document-list">
+                            <p>No hay documentos disponibles</p>
+                        </div>
+                    </div>
+                    
+                    <div class="document-section">
+                        <h4>Publicaciones con Archivos</h4>
+                        <div id="publicacionesList" class="document-list">
+                            <p>No hay publicaciones disponibles</p>
+                        </div>
+                    </div>
+
+                    <div class="document-section">
+                        <h4>Mensajes con Archivos</h4>
+                        <div id="mensajesList" class="document-list">
+                            <p>No hay mensajes disponibles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="profileForm" class="profile-form">
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary" onclick="cargarPerfil()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarAutenticacion();
+            cargarPerfil();
+            configurarEventListeners();
+        });
+
+        function configurarEventListeners() {
+            // Manejar cambio de foto
+            document.getElementById('photoInput').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    try {
+                        const base64Image = await convertirImagenABase64(file);
+                        await actualizarFotoPerfil(base64Image);
+                        mostrarMensaje('Foto actualizada con éxito', 'success');
+                    } catch (error) {
+                        mostrarMensaje('Error al actualizar la foto', 'error');
+                    }
+                }
+            });
+
+            // Manejar envío del formulario
+            document.getElementById('profileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await guardarPerfil();
+            });
+
+            // Manejar cierre de sesión
+            document.getElementById('logoutBtn').addEventListener('click', cerrarSesion);
+        }
+
+        async function verificarAutenticacion() {
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+
+            if (!token || !usuario) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/verificar-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Token inválido');
+                }
+
+                // Mostrar información básica del usuario
+                document.getElementById('userName').textContent = usuario.nombre;
+                document.getElementById('userEmail').textContent = usuario.email;
+
+            } catch (error) {
+                console.error('Error de autenticación:', error);
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function cargarPerfil() {
+            try {
+                const usuario = JSON.parse(localStorage.getItem('usuario'));
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(`http://localhost:3000/perfil/${usuario.id_usuario}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar el perfil');
+                }
+
+                const perfil = await response.json();
+                
+                // Llenar el formulario con los datos del perfil
+                document.getElementById('resumen').value = perfil.resumen || '';
+                document.getElementById('experiencia').value = perfil.experiencia || '';
+                document.getElementById('educacion').value = perfil.educacion || '';
+                document.getElementById('habilidades').value = perfil.habilidades || '';
+
+                // Mostrar foto de perfil si existe
+                if (perfil.foto) {
+                    document.getElementById('profilePhoto').src = `data:image/jpeg;base64,${perfil.foto}`;
+                }
+
+                // Cargar documentos específicos
+                await cargarDocumentos(usuario.id_usuario, token);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('Error al cargar el perfil', 'error');
+            }
+        }
+
+        async function cargarDocumentos(userId, token) {
+            try {
+                // Cargar curriculum y carta de presentación
+                const docResponse = await fetch(`http://localhost:3000/perfil/${userId}/documentos/curriculum`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const curriculum = await docResponse.json();
+
+                const cartaResponse = await fetch(`http://localhost:3000/perfil/${userId}/documentos/carta_presentacion`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const carta = await cartaResponse.json();
+
+                // Mostrar documentos de postulación
+                const postulacionDocsElement = document.getElementById('postulacionDocs');
+                postulacionDocsElement.innerHTML = '';
+                if (curriculum.length > 0 || carta.length > 0) {
+                    if (curriculum[0]?.curriculum) {
+                        postulacionDocsElement.innerHTML += `
+                            <div class="document-item">
+                                <span>Curriculum Vitae</span>
+                                <a href="data:application/pdf;base64,${curriculum[0].curriculum}" 
+                                   download="curriculum.pdf" 
+                                   class="btn btn-secondary">Descargar</a>
+                            </div>`;
+                    }
+                    if (carta[0]?.carta_presentacion) {
+                        postulacionDocsElement.innerHTML += `
+                            <div class="document-item">
+                                <span>Carta de Presentación</span>
+                                <a href="data:application/pdf;base64,${carta[0].carta_presentacion}" 
+                                   download="carta_presentacion.pdf" 
+                                   class="btn btn-secondary">Descargar</a>
+                            </div>`;
+                    }
+                } else {
+                    postulacionDocsElement.innerHTML = '<p>No hay documentos disponibles</p>';
+                }
+
+                // Cargar publicaciones
+                const pubResponse = await fetch(`http://localhost:3000/perfil/${userId}/documentos/publicaciones`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const publicaciones = await pubResponse.json();
+
+                // Mostrar publicaciones
+                const publicacionesElement = document.getElementById('publicacionesList');
+                publicacionesElement.innerHTML = '';
+                if (publicaciones.length > 0) {
+                    publicaciones.forEach(pub => {
+                        publicacionesElement.innerHTML += `
+                            <div class="document-item">
+                                <div class="pub-content">${pub.contenido}</div>
+                                ${pub.archivos ? `
+                                    <a href="data:application/octet-stream;base64,${pub.archivos}" 
+                                       download="archivo_publicacion" 
+                                       class="btn btn-secondary">Descargar Archivo</a>
+                                ` : ''}
+                                <div class="pub-date">Fecha: ${new Date(pub.fecha).toLocaleDateString()}</div>
+                            </div>`;
+                    });
+                } else {
+                    publicacionesElement.innerHTML = '<p>No hay publicaciones disponibles</p>';
+                }
+
+                // Cargar mensajes
+                const msgResponse = await fetch(`http://localhost:3000/perfil/${userId}/documentos/mensajes`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const mensajes = await msgResponse.json();
+
+                // Mostrar mensajes
+                const mensajesElement = document.getElementById('mensajesList');
+                mensajesElement.innerHTML = '';
+                if (mensajes.length > 0) {
+                    mensajes.forEach(msg => {
+                        mensajesElement.innerHTML += `
+                            <div class="document-item">
+                                <div class="msg-content">${msg.contenido}</div>
+                                <div class="msg-date">Fecha: ${new Date(msg.fecha_envio).toLocaleDateString()}</div>
+                            </div>`;
+                    });
+                } else {
+                    mensajesElement.innerHTML = '<p>No hay mensajes disponibles</p>';
+                }
+
+            } catch (error) {
+                console.error('Error al cargar documentos:', error);
+                mostrarMensaje('Error al cargar documentos', 'error');
+            }
+        }
+
+        async function guardarPerfil() {
+            try {
+                const usuario = JSON.parse(localStorage.getItem('usuario'));
+                const token = localStorage.getItem('token');
+
+                const datoPerfil = {
+                    resumen: document.getElementById('resumen').value,
+                    experiencia: document.getElementById('experiencia').value,
+                    educacion: document.getElementById('educacion').value,
+                    habilidades: document.getElementById('habilidades').value
+                };
+
+                const response = await fetch(`http://localhost:3000/perfil/${usuario.id_usuario}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(datoPerfil)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al guardar el perfil');
+                }
+
+                mostrarMensaje('Perfil actualizado con éxito', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarMensaje('Error al guardar el perfil', 'error');
+            }
+        }
+
+        async function actualizarFotoPerfil(base64Image) {
+            try {
+                const usuario = JSON.parse(localStorage.getItem('usuario'));
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(`http://localhost:3000/perfil/${usuario.id_usuario}/foto`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ foto: base64Image })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al actualizar la foto');
+                }
+
+                document.getElementById('profilePhoto').src = `data:image/jpeg;base64,${base64Image}`;
+            } catch (error) {
+                console.error('Error:', error);
+                throw error;
+            }
+        }
+
+        function convertirImagenABase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const base64String = reader.result.split(',')[1];
+                    resolve(base64String);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function mostrarMensaje(mensaje, tipo) {
+            const messageElement = document.getElementById('statusMessage');
+            messageElement.textContent = mensaje;
+            messageElement.className = `message ${tipo}`;
+            messageElement.style.display = 'block';
+
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 3000);
+        }
+
+        async function cerrarSesion() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch('http://localhost:3000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cerrar sesión');
+                }
+
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            } catch (error) {
+                console.error('Error:', error);
+                // Aún así, limpiamos el localStorage y redirigimos
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            }
+        }
+    </script>
+</body>
+</html>

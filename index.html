@@ -1,279 +1,251 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-    <!-- Cabeza -->
-    <meta charset="UTF-8">
-    <!-- Esxfpecifica la codificación de caracteres como UTF-8 (incluye caracteres especiales y acentos) -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Configura la vista para dispositivos móviles (ancho igual al dispositivo, escala inicial 1.0) -->
-    <title>RedSocialPro</title>
-    <!-- Título que aparece en la pestaña del navegador -->
-    <link rel="stylesheet" href="Style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RedSocialPro</title>
+  <link rel="stylesheet" href="Style.css">
+  <!-- Agregar meta tags para evitar caché -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 </head>
-
 <body>
-    <!-- Contenido visible de la página -->
-    <div class="container">
-        <!-- Título principal con símbolo especial -->
-        <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+  <div class="container">
+    <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Icono de usuario" class="logo" />
 
-        <!-- importacion del logo de usuario -->
-        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Icono de usuario" class="logo" />
-
-        <!-- Sección de Login (visible por defecto) -->
-        <div class="form-section" id="loginSection">
-            <h2>Iniciar Sesión</h2>
-            <div class="login-box">
-                <!-- establece el tipo de usuario  segun su numero correspondiente-->
-                <select id="tipoUsuario">
-                    <option value="1">Usuario normal</option>
-                    <!-- establece que si se guarda como perfil tipo 1 en la base de datos significa que es un usuario normal-->
-                    <option value="2">Administrador</option>
-                    <!-- establece que si se guarda como perfil tipo 2 en la base de datos significa que es un usuario administrador-->
-                </select>
-                <!-- Campos de formulario esta es la entrada de los datos del usuario -->
-                <input type="text" id="usuario" placeholder="Nombre de usuario o correo electrónico" required>
-                <!-- Tipo de entrada texto variable usuario -->
-                <input type="password" id="password" placeholder="Contraseña" required>
-                <!-- Tipo de entrada texto variable password -->
-                <!-- Mensaje de error -->
-                <div id="loginError" class="error-message"></div>
-
-                <!-- Botón de acción -->
-                <button id="loginButton" onclick="iniciarSesion()">Iniciar Sesión</button>
-
-                <!-- Enlace para cambiar a registro -->
-                <div class="toggle-form">
-                    ¿No tienes una cuenta? <a onclick="mostrarRegistro()">Regístrate aquí</a>
-                </div>
-            </div>
+    <!-- Login -->
+    <div class="form-section" id="loginSection">
+      <h2>Iniciar Sesión</h2>
+      <div class="login-box">
+        <select id="tipoUsuario">
+          <option value="1">Usuario normal</option>
+          <option value="2">Administrador</option>
+        </select>
+        <input type="text" id="usuario" placeholder="Nombre de usuario o correo electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <div id="loginError" class="error-message"></div>
+        <button id="loginButton">Iniciar Sesión</button>
+        <div class="toggle-form">
+          ¿No tienes una cuenta? <a href="#" id="linkRegistro">Regístrate aquí</a>
         </div>
-
-        <!-- Sección de Registro (oculta inicialmente) -->
-        <div class="form-section" id="registerSection" style="display: none;">
-            <h2>Registro de nuevo usuario</h2>
-            <div class="login-box">
-                <!-- Campos de formulario -->
-                <input type="text" id="nombreRegistro" placeholder="Nombre completo" required>
-                <input type="email" id="emailRegistro" placeholder="Correo electrónico" required>
-                <input type="password" id="passRegistro" placeholder="Contraseña (mínimo 6 caracteres)" required>
-
-                <!-- Selector de perfil -->
-                <select id="perfilRegistro">
-                    <option value="1">Usuario normal</option>
-                    <option value="2">Administrador</option>
-                </select>
-
-                <!-- Campo de código de admin (oculto inicialmente) -->
-                <div id="adminCodeContainer" style="display: none; margin-top: 10px;">
-                    <input type="password" id="adminCode" placeholder="Código secreto para administrador">
-                </div>
-
-                <!-- Mensajes -->
-                <div id="registerError" class="error-message"></div>
-                <div id="registerSuccess" class="success-message"></div>
-
-                <!-- Botón de acción -->
-                <button id="registerButton" onclick="registrarUsuario()">Registrarse</button>
-
-                <!-- Enlace para cambiar a login -->
-                <div class="toggle-form">
-                    ¿Ya tienes una cuenta? <a onclick="mostrarLogin()">Inicia sesión aquí</a>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <script>
-        // ***********************************************
-        // * LÓGICA JAVASCRIPT DE LA APLICACIÓN
-        // ***********************************************
+    <!-- Registro -->
+    <div class="form-section" id="registerSection" style="display: none;">
+      <h2>Registro de nuevo usuario</h2>
+      <div class="login-box">
+        <input type="text" id="nombreRegistro" placeholder="Nombre completo" required>
+        <input type="email" id="emailRegistro" placeholder="Correo electrónico" required>
+        <input type="password" id="passRegistro" placeholder="Contraseña (mínimo 6 caracteres)" required>
+        <select id="perfilRegistro">
+          <option value="1">Usuario normal</option>
+          <option value="2">Administrador</option>
+        </select>
+        <div id="adminCodeContainer" style="display: none;">
+          <input type="password" id="adminCode" placeholder="Código secreto para administrador">
+        </div>
+        <div id="registerError" class="error-message"></div>
+        <div id="registerSuccess" class="success-message"></div>
+        <button id="registerButton">Registrarse</button>
+        <div class="toggle-form">
+          ¿Ya tienes una cuenta? <a href="#" id="linkLogin">Inicia sesión aquí</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // Funciones para mostrar/ocultar formularios
-        function mostrarRegistro() {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('registerSection').style.display = 'block';
-            resetMessages();
+  <script>
+    // Limpiar localStorage al cargar la página si viene de logout
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('logout') === 'true') {
+        localStorage.clear();
+        // Limpiar la URL para evitar problemas con el historial
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      // Configurar eventos
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      const loginSection = document.getElementById('loginSection');
+      const registerSection = document.getElementById('registerSection');
+
+      document.getElementById('linkRegistro').onclick = (e) => {
+        e.preventDefault();
+        loginSection.style.display = 'none';
+        registerSection.style.display = 'block';
+        resetMessages();
+        resetForms();
+      };
+
+      document.getElementById('linkLogin').onclick = (e) => {
+        e.preventDefault();
+        registerSection.style.display = 'none';
+        loginSection.style.display = 'block';
+        resetMessages();
+        resetForms();
+      };
+
+      document.getElementById('perfilRegistro').addEventListener('change', (e) => {
+        document.getElementById('adminCodeContainer').style.display = 
+          e.target.value === '2' ? 'block' : 'none';
+      });
+
+      document.getElementById('password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') iniciarSesion();
+      });
+
+      document.getElementById('passRegistro').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') registrarUsuario();
+      });
+
+      document.getElementById('loginButton').addEventListener('click', iniciarSesion);
+      document.getElementById('registerButton').addEventListener('click', registrarUsuario);
+    }
+
+    function resetForms() {
+      document.getElementById('usuario').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('nombreRegistro').value = '';
+      document.getElementById('emailRegistro').value = '';
+      document.getElementById('passRegistro').value = '';
+      document.getElementById('adminCode').value = '';
+    }
+
+    function resetMessages() {
+      document.getElementById('loginError').textContent = '';
+      document.getElementById('registerError').textContent = '';
+      document.getElementById('registerSuccess').textContent = '';
+    }
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
+    function validatePassword(password) {
+      return password.length >= 6;
+    }
+
+    function showError(elementId, message) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      setTimeout(() => (element.textContent = ''), 5000);
+    }
+
+    async function iniciarSesion() {
+      const usuario = document.getElementById('usuario').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const id_perfil = parseInt(document.getElementById('tipoUsuario').value);
+      const loginButton = document.getElementById('loginButton');
+
+      if (!usuario || !password) {
+        showError('loginError', 'Por favor complete todos los campos.');
+        return;
+      }
+
+      loginButton.disabled = true;
+      loginButton.textContent = 'Iniciando sesión...';
+
+      try {
+        const res = await fetch('http://localhost:3000/login', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          },
+          body: JSON.stringify({ usuario, password, id_perfil })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('usuario', JSON.stringify(data.usuario));
+          localStorage.setItem('token', data.token);
+          window.location.href = data.usuario.id_perfil === 2 ? "admin.html" : "bienvenida.html";
+        } else {
+          showError('loginError', data.message || 'Error al iniciar sesión.');
         }
+      } catch (error) {
+        console.error('Error completo:', error);
+        showError('loginError', 'Error de conexión con el servidor.');
+      } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = 'Iniciar Sesión';
+      }
+    }
 
-        function mostrarLogin() {
-            document.getElementById('registerSection').style.display = 'none';
-            document.getElementById('loginSection').style.display = 'block';
-            resetMessages();
-        }
+    async function registrarUsuario() {
+      const nombre = document.getElementById('nombreRegistro').value.trim();
+      const email = document.getElementById('emailRegistro').value.trim();
+      const contrasena = document.getElementById('passRegistro').value.trim();
+      const id_perfil = parseInt(document.getElementById('perfilRegistro').value);
+      const adminCode = document.getElementById('adminCode')?.value;
+      const registerButton = document.getElementById('registerButton');
 
-        // Limpiar mensajes de error/éxito
-        function resetMessages() {
-            document.getElementById('loginError').textContent = '';
-            document.getElementById('registerError').textContent = '';
+      if (!nombre || !email || !contrasena) {
+        showError('registerError', 'Por favor complete todos los campos.');
+        return;
+      }
+
+      if (!validateEmail(email)) {
+        showError('registerError', 'Correo electrónico inválido.');
+        return;
+      }
+
+      if (!validatePassword(contrasena)) {
+        showError('registerError', 'Contraseña mínima de 6 caracteres.');
+        return;
+      }
+
+      if (id_perfil === 2 && adminCode !== 'ADMON123') {
+        showError('registerError', 'Código de administrador incorrecto.');
+        return;
+      }
+
+      registerButton.disabled = true;
+      registerButton.textContent = 'Registrando...';
+
+      try {
+        const res = await fetch('http://localhost:3000/registro', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          },
+          body: JSON.stringify({ 
+            nombre, 
+            email, 
+            contrasena, 
+            id_perfil, 
+            adminCode: id_perfil === 2 ? adminCode : null 
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          document.getElementById('registerSuccess').textContent = 'Registro exitoso.';
+          setTimeout(() => {
             document.getElementById('registerSuccess').textContent = '';
+            document.getElementById('linkLogin').click();
+          }, 1500);
+        } else {
+          showError('registerError', data.message || 'Error en el registro.');
         }
-
-        // Validar formato de email
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        // Validar longitud de contraseña
-        function validatePassword(password) {
-            return password.length >= 6;
-        }
-
-        // Mostrar mensaje de error temporal
-        function showError(elementId, message) {
-            const element = document.getElementById(elementId);
-            element.textContent = message;
-            setTimeout(() => {
-                element.textContent = '';
-            }, 5000);  // Desaparece después de 5 segundos
-        }
-
-        // Mostrar campo de código admin cuando se selecciona perfil admin
-        document.getElementById('perfilRegistro').addEventListener('change', function () {
-            const adminCodeContainer = document.getElementById('adminCodeContainer');
-            adminCodeContainer.style.display = this.value === '2' ? 'block' : 'none';
-        });
-
-        // Función para iniciar sesión
-        async function iniciarSesion() {
-            // Obtener valores de los campos
-            const usuario = document.getElementById('usuario').value.trim();
-            //traer el usuario
-            const password = document.getElementById('password').value.trim();
-            const id_perfil = parseInt(document.getElementById('tipoUsuario').value);
-            const loginButton = document.getElementById('loginButton');
-
-            // Validar campos vacíos
-            if (!usuario || !password) {
-                showError('loginError', 'Por favor complete todos los campos.');
-                return;
-            }
-
-            // Deshabilitar botón durante la solicitud
-            loginButton.disabled = true;
-            loginButton.textContent = 'Iniciando sesión...';
-
-            try {
-                // Enviar solicitud al servidor
-                const res = await fetch('http://localhost:3000/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario, password, id_perfil })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    // Guardar usuario en localStorage
-                    localStorage.setItem('usuario', JSON.stringify(data.usuario));
-
-                    // Redirigir según tipo de usuario
-                    if (data.usuario.id_perfil === 2) {
-                        window.location.href = "admin.html";
-                    } else {
-                        window.location.href = "bienvenida.html";
-                    }
-                } else {
-                    showError('loginError', data.message || "Error al iniciar sesión");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                showError('loginError', "Ocurrió un error al conectar con el servidor");
-            } finally {
-                // Restaurar botón
-                loginButton.disabled = false;
-                loginButton.textContent = 'Iniciar Sesión';
-            }
-        }
-
-        // Función para registrar usuario
-        async function registrarUsuario() {
-            // Obtener valores de los campos
-            const nombre = document.getElementById('nombreRegistro').value.trim();
-            const email = document.getElementById('emailRegistro').value.trim();
-            const contrasena = document.getElementById('passRegistro').value.trim();
-            const id_perfil = parseInt(document.getElementById('perfilRegistro').value);
-            const adminCode = document.getElementById('adminCode')?.value;
-            const registerButton = document.getElementById('registerButton');
-
-            // Validaciones básicas
-            if (!nombre || !email || !contrasena) {
-                showError('registerError', 'Por favor complete todos los campos de registro.');
-                return;
-            }
-
-            if (!validateEmail(email)) {
-                showError('registerError', 'Por favor ingrese un correo electrónico válido.');
-                return;
-            }
-
-            if (!validatePassword(contrasena)) {
-                showError('registerError', 'La contraseña debe tener al menos 6 caracteres.');
-                return;
-            }
-
-            // Validación especial para admin
-            if (id_perfil === 2 && adminCode !== "ADMON123") {
-                showError('registerError', 'Código de administrador incorrecto');
-                return;
-            }
-
-            // Deshabilitar botón durante el registro
-            registerButton.disabled = true;
-            registerButton.textContent = 'Registrando...';
-
-            try {
-                // Enviar solicitud al servidor
-                const res = await fetch('http://localhost:3000/registro', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nombre,
-                        email,
-                        contrasena,
-                        id_perfil,
-                        adminCode: id_perfil === 2 ? adminCode : null
-                    })
-                });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    // Mostrar mensaje de éxito e iniciar sesión automáticamente
-                    document.getElementById('registerSuccess').textContent = 'Registro exitoso.';
-                } else {
-                    showError('registerError', data.message || "Error al registrar el usuario");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                showError('registerError', "Ocurrió un error al conectar con el servidor");
-            } finally {
-                // Restaurar botón
-                registerButton.disabled = false;
-                registerButton.textContent = 'Registrarse';
-            }
-        }
-
-
-
-
-        // Permitir iniciar sesión con tecla Enter
-        document.getElementById('password').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                iniciarSesion();
-            }
-        });
-
-        // Permitir registrarse con tecla Enter
-        document.getElementById('passRegistro').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                registrarUsuario();
-            }
-        });
-    </script>
+      } catch (error) {
+        console.error('Error completo:', error);
+        showError('registerError', 'Error de conexión con el servidor.');
+      } finally {
+        registerButton.disabled = false;
+        registerButton.textContent = 'Registrarse';
+      }
+    }
+  </script>
 </body>
-
 </html>
