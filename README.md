@@ -7,4 +7,3 @@ Indicaciones
 
 -La contraseña cifrada que hice siempre la he puesto como ( 123456 ) para evitar confusiones
 
-NO DE CLICK EN EL BOTON AZUL QUE DICE COMPARE & PULL REQUEST
