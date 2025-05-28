@@ -7,3 +7,5 @@ Indicaciones
 
 -La contraseña cifrada que hice siempre la he puesto como ( 123456 ) para evitar confusiones
 
+la base de datos esta hecha en workbench y wammpserver
+
