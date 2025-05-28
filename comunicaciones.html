@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicaciones - RedSocialPro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-action {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-action:hover {
+            background: #ff3742;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            height: 600px;
+            overflow: hidden;
+        }
+
+        .contacts-list {
+            width: 350px;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background: white;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .badge {
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+            display: none;
+        }
+
+        .panel {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+        }
+
+        .panel.active {
+            display: flex;
+        }
+
+        .search-bar {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            padding-left: 2.5rem;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 1.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .contacts {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .contact-item:hover {
+            background: #f8f9fa;
+        }
+
+        .contact-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .contact-status {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-friend-request,
+        .btn-message,
+        .btn-accept,
+        .btn-reject,
+        .btn-disabled {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-friend-request {
+            background: #4285f4;
+            color: white;
+        }
+
+        .btn-friend-request:hover {
+            background: #357abd;
+        }
+
+        .btn-message {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-accept {
+            background: #4CAF50;
+            color: white;
+            padding: 8px;
+        }
+
+        .btn-reject {
+            background: #F44336;
+            color: white;
+            padding: 8px;
+        }
+
+        .btn-disabled {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-none {
+            background: #e8f5e8;
+            color: #2e7d2e;
+        }
+
+        .status-friends {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-sent {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-received {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .request-date {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .message-placeholder {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .message-placeholder i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .message-placeholder.error {
+            color: #f44336;
+        }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        .messages-list {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message-input {
+            padding: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .message-input textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            resize: none;
+            height: 60px;
+        }
+
+        .message-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+        }
+
+        .message-actions button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 250px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #4CAF50;
+        }
+
+        .notification.error {
+            background: #F44336;
+        }
+
+        .notification.info {
+            background: #2196F3;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: calc(100vh - 120px);
+                flex-direction: column;
+            }
+
+            .contacts-list {
+                width: 100%;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+        <nav class="nav-menu">
+            <a href="bienvenida.html"><i class="fas fa-home"></i> Inicio</a>
+            <a href="perfil.html"><i class="fas fa-user"></i> Perfil</a>
+            <a href="publicados.html"><i class="fas fa-newspaper"></i> Publicaciones</a>
+        </nav>
+        <div class="user-info">
+            <span id="userName">Usuario</span>
+            <button id="btnCerrarSesion" class="btn-action" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="chat-container">
+            <div class="contacts-list">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="cambiarTab('contactos')">Contactos</button>
+                    <button class="tab-btn" onclick="cambiarTab('buscar')">Buscar</button>
+                    <button class="tab-btn" onclick="cambiarTab('solicitudes')">Solicitudes <span id="solicitudesBadge"
+                            class="badge">0</span></button>
+                </div>
+
+                <!-- Panel de Contactos -->
+                <div id="contactosPanel" class="panel active">
+                    <div class="search-bar">
+                        <input type="text" id="searchContacts" placeholder="Filtrar contactos...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div id="contactsList" class="contacts">
+                        <div class="message-placeholder">
+                            <i class="fas fa-users"></i>
+                            <p>Tus amigos aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Búsqueda -->
+                <div id="buscarPanel" class="panel">
+                    <div class="search-bar">
+                        <input type="text" id="searchUsers" placeholder="Buscar usuarios..." onkeyup="buscarUsuarios()">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div id="usersList" class="contacts">
+                        <div class="message-placeholder">
+                            <i class="fas fa-search"></i>
+                            <p>Busca usuarios para enviar solicitudes de amistad</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Solicitudes -->
+                <div id="solicitudesPanel" class="panel">
+                    <div id="solicitudesList" class="contacts">
+                        <div class="message-placeholder">
+                            <i class="fas fa-user-plus"></i>
+                            <p>No tienes solicitudes pendientes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-window">
+                <div class="chat-header">
+                    <div id="selectedContact">
+                        <span>Selecciona un contacto para comenzar</span>
+                    </div>
+                </div>
+                <div id="messagesList" class="messages-list">
+                    <div class="message-placeholder">
+                        <i class="fas fa-comments"></i>
+                        <p>Selecciona un contacto para ver los mensajes</p>
+                    </div>
+                </div>
+                <div class="message-input">
+                    <textarea id="messageContent" placeholder="Escribe tu mensaje..."></textarea>
+                    <div class="message-actions">
+                        <button id="sendMessage" onclick="enviarMensaje()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let selectedContactId = null;
+        let messagePollingInterval = null;
+        let currentTab = 'contactos';
+        let searchTimeout = null;
+
+        // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+            if (!token || !usuario) {
+                window.location.href = 'index.html?logout=true';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/verificar-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Token inválido');
+                }
+
+                document.getElementById('userName').textContent = usuario.nombre;
+
+                // Cargar datos iniciales
+                await cargarSolicitudesPendientes();
+                await cargarContactos();
+
+            } catch (error) {
+                console.error('Error al verificar autenticación:', error);
+                window.location.href = 'index.html?logout=true';
+            }
+        });
+
+        // Cambiar entre tabs
+        function cambiarTab(tab) {
+            currentTab = tab;
+
+            // Actualizar botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Actualizar paneles
+            document.querySelectorAll('.panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(tab + 'Panel').classList.add('active');
+
+            // Cargar datos según el tab
+            if (tab === 'solicitudes') {
+                cargarSolicitudesPendientes();
+            } else if (tab === 'contactos') {
+                cargarContactos();
+            }
+        }
+
+        // Función para buscar usuarios (MEJORADA)
+        async function buscarUsuarios() {
+            const searchTerm = document.getElementById('searchUsers').value.trim();
+
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            if (searchTerm.length < 2) {
+                document.getElementById('usersList').innerHTML = `
+                    <div class="message-placeholder">
+                        <i class="fas fa-search"></i>
+                        <p>Escribe al menos 2 caracteres para buscar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    mostrarCargando('usersList');
+
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`http://localhost:3000/buscar-usuarios?busqueda=${encodeURIComponent(searchTerm)}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Error al buscar usuarios');
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        mostrarUsuariosEncontrados(data.data);
+                    } else {
+                        throw new Error(data.message);
+                    }
+
+                } catch (error) {
+                    console.error('Error al buscar usuarios:', error);
+                    document.getElementById('usersList').innerHTML = `
+                        <div class="message-placeholder error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Error al buscar usuarios</p>
+                        </div>
+                    `;
+                }
+            }, 300);
+        }
+
+        // Mostrar usuarios encontrados
+        function mostrarUsuariosEncontrados(usuarios) {
+            const container = document.getElementById('usersList');
+
+            if (usuarios.length === 0) {
+                container.innerHTML = `
+                    <div class="message-placeholder">
+                        <i class="fas fa-user-slash"></i>
+                        <p>No se encontraron usuarios</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            usuarios.forEach(usuario => {
+                const statusInfo = getStatusInfo(usuario.relacion_estado);
+
+                html += `
+                    <div class="contact-item user-item">
+                        <div class="contact-avatar">
+                            ${usuario.nombre.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">${usuario.nombre}</div>
+                            <div class="contact-status">${usuario.email}</div>
+                            <span class="status-badge ${statusInfo.class}">${statusInfo.text}</span>
+                        </div>
+                        <div class="contact-actions">
+                            ${getActionButton(usuario)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Obtener información del estado de relación
+        function getStatusInfo(estado) {
+            const estados = {
+                'ninguna': { class: 'status-none', text: 'Sin conexión' },
+                'amigos': { class: 'status-friends', text: 'Amigos' },
+                'solicitud_enviada': { class: 'status-sent', text: 'Solicitud enviada' },
+                'solicitud_recibida': { class: 'status-received', text: 'Solicitud recibida' }
+            };
+            return estados[estado] || estados['ninguna'];
+        }
+
+        // Obtener botón de acción según el estado
+        function getActionButton(usuario) {
+            switch (usuario.relacion_estado) {
+                case 'ninguna':
+                    return `<button class="btn-friend-request" onclick="enviarSolicitudAmistad(${usuario.id_usuario}, '${usuario.nombre}')">
+                                <i class="fas fa-user-plus"></i> Enviar solicitud
+                            </button>`;
+                case 'amigos':
+                    return `<button class="btn-message" onclick="iniciarChat(${usuario.id_usuario}, '${usuario.nombre}')">
+                                <i class="fas fa-comment"></i> Mensaje
+                            </button>`;
+                case 'solicitud_enviada':
+                    return `<button class="btn-disabled" disabled>
+                                <i class="fas fa-clock"></i> Pendiente
+                            </button>`;
+                case 'solicitud_recibida':
+                    return `<button class="btn-accept" onclick="cambiarTab('solicitudes')">
+                                <i class="fas fa-eye"></i> Ver solicitud
+                            </button>`;
+                default:
+                    return '';
+            }
+        }
+
+        // Enviar solicitud de amistad
+        async function enviarSolicitudAmistad(idReceptor, nombreReceptor) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:3000/solicitar-amistad', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        id_receptor: idReceptor
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarMensaje(`Solicitud enviada a ${nombreReceptor}`, 'success');
+                    // Actualizar la búsqueda para reflejar el cambio
+                    setTimeout(() => {
+                        buscarUsuarios();
+                    }, 500);
+                } else {
+                    throw new Error(data.message);
+                }
+
+            } catch (error) {
+                console.error('Error al enviar solicitud:', error);
+                mostrarMensaje(`Error al enviar solicitud: ${error.message}`, 'error');
+            }
+        }
+
+        // Cargar solicitudes pendientes
+        async function cargarSolicitudesPendientes() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:3000/mis-solicitudes-recibidas', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar solicitudes');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarSolicitudesPendientes(data.data);
+                    actualizarBadgeSolicitudes(data.total);
+                } else {
+                    throw new Error(data.message);
+                }
+
+            } catch (error) {
+                console.error('Error al cargar solicitudes:', error);
+                mostrarMensaje('Error al cargar solicitudes de amistad', 'error');
+            }
+        }
+
+        // Mostrar solicitudes pendientes
+        function mostrarSolicitudesPendientes(solicitudes) {
+            const container = document.getElementById('solicitudesList');
+
+            if (solicitudes.length === 0) {
+                container.innerHTML = `
+                    <div class="message-placeholder">
+                        <i class="fas fa-user-plus"></i>
+                        <p>No tienes solicitudes pendientes</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            solicitudes.forEach(solicitud => {
+                html += `
+                    <div class="contact-item request-item">
+                        <div class="contact-avatar">
+                            ${solicitud.emisor_nombre.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">${solicitud.emisor_nombre}</div>
+                            <div class="contact-status">${solicitud.emisor_email}</div>
+                            <div class="request-date">${formatearFecha(solicitud.fecha_solicitud)}</div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn-accept" onclick="responderSolicitud(${solicitud.id_conexion}, 'aceptar', '${solicitud.emisor_nombre}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-reject" onclick="responderSolicitud(${solicitud.id_conexion}, 'rechazar', '${solicitud.emisor_nombre}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Responder a solicitud de amistad
+        async function responderSolicitud(idConexion, accion, nombreEmisor) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`http://localhost:3000/responder-solicitud/${idConexion}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        accion: accion
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    mostrarMensaje(data.message, 'success');
+                    // Recargar solicitudes pendientes
+                    await cargarSolicitudesPendientes();
+                    // Recargar contactos si se aceptó la solicitud
+                    if (accion === 'aceptar') {
+                        await cargarContactos();
+                    }
+                } else {
+                    throw new Error(data.message);
+                }
+
+            } catch (error) {
+                console.error('Error al responder solicitud:', error);
+                mostrarMensaje(`Error al responder solicitud: ${error.message}`, 'error');
+            }
+        }
+
+        // Cargar contactos (amigos)
+        async function cargarContactos() {
+            try {
+                const token = localStorage.getItem('token');
+                // Por ahora mostrar mensaje de que esta funcionalidad está en desarrollo
+                document.getElementById('contactsList').innerHTML = `
+                    <div class="message-placeholder">
+                        <i class="fas fa-users"></i>
+                        <p>Chat en desarrollo</p>
+                        <p>Los amigos aparecerán aquí pronto</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error al cargar contactos:', error);
+            }
+        }
+
+        // Actualizar badge de solicitudes
+        function actualizarBadgeSolicitudes(cantidad) {
+            const badge = document.getElementById('solicitudesBadge');
+            badge.textContent = cantidad;
+            badge.style.display = cantidad > 0 ? 'inline' : 'none';
+        }
+
+        // Mostrar indicador de carga
+        function mostrarCargando(containerId) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="message-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando...</p>
+                </div>
+            `;
+        }
+
+        // Formatear fecha
+        function formatearFecha(fecha) {
+            const date = new Date(fecha);
+            const ahora = new Date();
+            const diff = ahora - date;
+            const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            if (dias === 0) {
+                return 'Hoy';
+            } else if (dias === 1) {
+                return 'Ayer';
+            } else if (dias < 7) {
+                return `Hace ${dias} días`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+
+        // Mostrar mensajes de notificación
+        function mostrarMensaje(mensaje, tipo = 'info') {
+            // Crear elemento de notificación
+            const notificacion = document.createElement('div');
+            notificacion.className = `notification ${tipo}`;
+            notificacion.innerHTML = `
+                <i class="fas fa-${tipo === 'success' ? 'check' : tipo === 'error' ? 'exclamation-triangle' : 'info'}"></i>
+                <span>${mensaje}</span>
+            `;
+
+            // Agregar al documento
+            document.body.appendChild(notificacion);
+
+            // Mostrar con animación
+            setTimeout(() => {
+                notificacion.classList.add('show');
+            }, 100);
+
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                notificacion.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notificacion);
+                }, 300);
+            }, 3000);
+        }
+
+        // Funciones placeholder para chat (a desarrollar)
+        function iniciarChat(idUsuario, nombre) {
+            mostrarMensaje('Función de chat en desarrollo', 'info');
+        }
+
+        function enviarMensaje() {
+            mostrarMensaje('Función de mensajes en desarrollo', 'info');
+        }
+
+        // Cerrar sesión
+        async function cerrarSesion() {
+            try {
+                const token = localStorage.getItem('token');
+                await fetch('http://localhost:3000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            }
+        }
+    </script>
+</body>
+
+</html>

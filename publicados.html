@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicaciones - RedSocialPro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="publicados.css">
+</head>
+<body>
+    <header class="header">
+        <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+        <nav class="nav-menu">
+            <a href="bienvenida.html"><i class="fas fa-home"></i> Inicio</a>
+            <a href="perfil.html"><i class="fas fa-user"></i> Perfil</a>
+            <a href="publicados.html" class="active"><i class="fas fa-newspaper"></i> Publicaciones</a>
+            <a href="comunicaciones.html"><i class="fas fa-comments"></i> Comunicaciones</a>
+        </nav>
+        <div class="user-info">
+            <span id="userName">Usuario</span>
+            <button class="btn-action" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Formulario para crear nueva publicación -->
+        <div class="create-post-card">
+            <h2><i class="fas fa-plus-circle"></i> Crear Nueva Publicación</h2>
+            <div id="alertContainer"></div>
+            
+            <form id="createPostForm">
+                <div class="form-group">
+                    <label for="postContent">¿Qué quieres compartir?</label>
+                    <textarea id="postContent" name="contenido" placeholder="Comparte tu experiencia profesional, logros, proyectos o pensamientos..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Adjuntar archivo (opcional)</label>
+                    <div class="file-upload">
+                        <input type="file" id="postFile" name="archivo" accept=".pdf,.jpg,.jpeg,.png">
+                        <label for="postFile" class="file-upload-label">
+                            <i class="fas fa-paperclip"></i>
+                            Seleccionar archivo (PDF, JPG, PNG)
+                        </label>
+                    </div>
+                    <div id="filePreview" class="file-preview"></div>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="submitBtn">
+                    <i class="fas fa-share"></i> Publicar
+                </button>
+            </form>
+        </div>
+
+        <!-- Feed de publicaciones -->
+        <div class="posts-feed">
+            <div id="postsContainer">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Cargando publicaciones...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar autenticación
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+            if (!token || !usuario) {
+                window.location.href = 'index.html?logout=true';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/verificar-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Token inválido');
+                }
+
+                currentUser = usuario;
+                document.getElementById('userName').textContent = usuario.nombre;
+                
+                // Cargar publicaciones
+                await cargarPublicaciones();
+
+            } catch (error) {
+                console.error('Error al verificar autenticación:', error);
+                window.location.href = 'index.html?logout=true';
+            }
+        });
+
+        // Manejar preview de archivo
+        document.getElementById('postFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('filePreview');
+            
+            if (file) {
+                preview.innerHTML = `
+                    <div class="file-info">
+                        <i class="fas fa-file"></i>
+                        <span>${file.name} (${formatFileSize(file.size)})</span>
+                        <button type="button" onclick="clearFile()" style="margin-left: 10px; background: #ff4757; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        function clearFile() {
+            document.getElementById('postFile').value = '';
+            document.getElementById('filePreview').style.display = 'none';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Manejar envío de formulario
+        document.getElementById('createPostForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
+                
+                const formData = new FormData(e.target);
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch('http://localhost:3000/crear-publicacion', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert('Publicación creada exitosamente', 'success');
+                    e.target.reset();
+                    clearFile();
+                    await cargarPublicaciones();
+                } else {
+                    throw new Error(result.error || 'Error al crear publicación');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error al crear publicación: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        // Cargar publicaciones
+        async function cargarPublicaciones() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:3000/obtener-publicaciones', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar publicaciones');
+                }
+
+                const publicaciones = await response.json();
+                mostrarPublicaciones(publicaciones);
+
+            } catch (error) {
+                console.error('Error al cargar publicaciones:', error);
+                document.getElementById('postsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error al cargar publicaciones</h3>
+                        <p>No se pudieron cargar las publicaciones. Verifica tu conexión.</p>
+                        <button onclick="cargarPublicaciones()" class="btn-primary" style="margin-top: 1rem;">
+                            <i class="fas fa-refresh"></i> Intentar de nuevo
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Mostrar publicaciones
+        function mostrarPublicaciones(publicaciones) {
+            const container = document.getElementById('postsContainer');
+            
+            if (publicaciones.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-newspaper"></i>
+                        <h3>No hay publicaciones aún</h3>
+                        <p>¡Sé el primero en compartir algo!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = publicaciones.map(post => {
+                const fechaFormateada = formatearFecha(post.fecha);
+                const esAutor = currentUser && post.autor_id === currentUser.id_usuario;
+                
+                return `
+                    <div class="post-card">
+                        <div class="post-header">
+                            <div class="post-avatar">
+                                ${post.nombre.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="post-info">
+                                <h3>${post.nombre}</h3>
+                                <div class="post-date">${fechaFormateada}</div>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-text">${escapeHtml(post.contenido)}</div>
+                            ${post.archivo ? generarVistaArchivo(post.archivo) : ''}
+                        </div>
+                        <div class="post-actions">
+                            <button class="action-btn" onclick="darLike(${post.id_publicacion})">
+                                <i class="fas fa-thumbs-up"></i> Me gusta
+                            </button>
+                            <button class="action-btn" onclick="comentar(${post.id_publicacion})">
+                                <i class="fas fa-comment"></i> Comentar
+                            </button>
+                            <button class="action-btn" onclick="compartir(${post.id_publicacion})">
+                                <i class="fas fa-share"></i> Compartir
+                            </button>
+                            ${esAutor ? `<button class="action-btn" onclick="eliminarPost(${post.id_publicacion})" style="color: #ff4757;">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function generarVistaArchivo(archivo) {
+            if (!archivo || !archivo.data) return '';
+            
+            const { data, mimeType, size } = archivo;
+            const sizeFormatted = formatFileSize(size);
+            
+            if (mimeType.startsWith('image/')) {
+                return `
+                    <div class="post-file">
+                        <img src="data:${mimeType};base64,${data}" 
+                             style="max-width: 100%; height: auto; border-radius: 5px;" 
+                             alt="Imagen adjunta">
+                        <div class="post-file-info">
+                            <i class="fas fa-image"></i>
+                            <span>Imagen (${sizeFormatted})</span>
+                        </div>
+                    </div>
+                `;
+            } else if (mimeType === 'application/pdf') {
+                return `
+                    <div class="post-file">
+                        <div class="post-file-info">
+                            <i class="fas fa-file-pdf" style="color: #e74c3c;"></i>
+                            <span>Documento PDF (${sizeFormatted})</span>
+                            <a href="data:${mimeType};base64,${data}" 
+                               download="documento.pdf" 
+                               style="margin-left: 10px; color: #667eea;">
+                                <i class="fas fa-download"></i> Descargar
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="post-file">
+                        <div class="post-file-info">
+                            <i class="fas fa-file"></i>
+                            <span>Archivo adjunto (${sizeFormatted})</span>
+                            <a href="data:${mimeType};base64,${data}" 
+                               download="archivo" 
+                               style="margin-left: 10px; color: #667eea;">
+                                <i class="fas fa-download"></i> Descargar
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function formatearFecha(fecha) {
+            const date = new Date(fecha);
+            const ahora = new Date();
+            const diff = ahora - date;
+            const minutos = Math.floor(diff / 60000);
+            const horas = Math.floor(diff / 3600000);
+            const dias = Math.floor(diff / 86400000);
+            
+            if (minutos < 1) return 'Hace un momento';
+            if (minutos < 60) return `Hace ${minutos} minuto${minutos > 1 ? 's' : ''}`;
+            if (horas < 24) return `Hace ${horas} hora${horas > 1 ? 's' : ''}`;
+            if (dias < 7) return `Hace ${dias} día${dias > 1 ? 's' : ''}`;
+            
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        // Funciones de interacción (placeholders)
+        function darLike(postId) {
+            showAlert('Función de likes en desarrollo', 'info');
+        }
+
+        function comentar(postId) {
+            showAlert('Función de comentarios en desarrollo', 'info');
+        }
+
+        function compartir(postId) {
+            showAlert('Función para compartir en desarrollo', 'info');
+        }
+
+        async function eliminarPost(postId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta publicación?')) {
+                showAlert('Función de eliminar en desarrollo', 'info');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-hide después de 5 segundos
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        async function cerrarSesion() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                await fetch('http://localhost:3000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            }
+        }
+    </script>
+</body>
+</html>

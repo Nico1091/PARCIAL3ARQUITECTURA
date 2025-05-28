@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedSocialPro - Iniciar Sesión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1><i class="fas fa-users"></i> RedSocialPro</h1>
+            <p>Conecta con amigos y profesionales</p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('login')">Iniciar Sesión</div>
+            <div class="tab" onclick="switchTab('register')">Registrarse</div>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <!-- Formulario de Login -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginUser">Usuario o Email:</label>
+                <input type="text" id="loginUser" name="usuario" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Contraseña:</label>
+                <input type="password" id="loginPassword" name="password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="loginProfile">Tipo de Perfil:</label>
+                <select id="loginProfile" name="id_perfil" required>
+                    <option value="1">Usuario Normal</option>
+                    <option value="2">Administrador</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn" id="loginBtn">
+                <span class="btn-text">Iniciar Sesión</span>
+                <span class="loading hidden"></span>
+            </button>
+        </form>
+        
+        <!-- Formulario de Registro -->
+        <form id="registerForm" class="hidden">
+            <div class="form-group">
+                <label for="registerName">Nombre Completo:</label>
+                <input type="text" id="registerName" name="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="registerEmail">Email:</label>
+                <input type="email" id="registerEmail" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="registerPassword">Contraseña:</label>
+                <input type="password" id="registerPassword" name="contrasena" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="registerProfile">Tipo de Perfil:</label>
+                <select id="registerProfile" name="id_perfil" required onchange="toggleAdminCode()">
+                    <option value="1">Usuario Normal</option>
+                    <option value="2">Administrador</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="adminCodeGroup">
+                <label for="adminCode">Código de Administrador:</label>
+                <input type="password" id="adminCode" name="adminCode" placeholder="Ingresa: ADMON123">
+            </div>
+            
+            <button type="submit" class="btn" id="registerBtn">
+                <span class="btn-text">Registrarse</span>
+                <span class="loading hidden"></span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        let currentTab = 'login';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === 'true') {
+                showAlert('Sesión cerrada exitosamente', 'success');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${tab === 'login' ? '1' : '2'})`).classList.add('active');
+            
+            if (tab === 'login') {
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('registerForm').classList.add('hidden');
+            } else {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('registerForm').classList.remove('hidden');
+            }
+            clearAlerts();
+        }
+        
+        function toggleAdminCode() {
+            const profileSelect = document.getElementById('registerProfile');
+            const adminCodeGroup = document.getElementById('adminCodeGroup');
+            
+            if (profileSelect.value === '2') {
+                adminCodeGroup.style.display = 'block';
+                document.getElementById('adminCode').required = true;
+            } else {
+                adminCodeGroup.style.display = 'none';
+                document.getElementById('adminCode').required = false;
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert ${type}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    ${message}
+                </div>
+            `;
+        }
+        
+        function clearAlerts() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+        
+        function showLoading(formType) {
+            const btn = document.getElementById(formType + 'Btn');
+            const btnText = btn.querySelector('.btn-text');
+            const loading = btn.querySelector('.loading');
+            
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            loading.classList.remove('hidden');
+        }
+        
+        function hideLoading(formType) {
+            const btn = document.getElementById(formType + 'Btn');
+            const btnText = btn.querySelector('.btn-text');
+            const loading = btn.querySelector('.loading');
+            
+            btn.disabled = false;
+            btnText.classList.remove('hidden');
+            loading.classList.add('hidden');
+        }
+        
+        // Manejar formulario de login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlerts();
+            showLoading('login');
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.id_perfil = parseInt(data.id_perfil);
+            
+            try {
+                const response = await fetch('http://localhost:3000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('usuario', JSON.stringify(result.usuario));
+                    showAlert(result.message, 'success');
+                    setTimeout(() => { window.location.href = 'bienvenida.html'; }, 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión. Verifique que el servidor esté ejecutándose en el puerto 3000.', 'error');
+            } finally {
+                hideLoading('login');
+            }
+        });
+        
+        // Manejar formulario de registro
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearAlerts();
+            showLoading('register');
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.id_perfil = parseInt(data.id_perfil);
+            
+            try {
+                const response = await fetch('http://localhost:3000/registro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message + ' - Puedes iniciar sesión ahora', 'success');
+                    setTimeout(() => { switchTab('login'); }, 2000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error de conexión. Verifique que el servidor esté ejecutándose.', 'error');
+            } finally {
+                hideLoading('register');
+            }
+        });
+    </script>
+</body>
+</html>

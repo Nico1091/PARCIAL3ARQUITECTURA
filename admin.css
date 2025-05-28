@@ -1,0 +1,356 @@
+/* Variables globales */
+:root {
+    --primary-color: #4285f4;
+    --secondary-color: #f8f9fa;
+    --text-color: #333;
+    --background-color: #fff;
+    --border-color: #e0e0e0;
+    --hover-color: #357abd;
+    --error-color: #f8d7da;
+    --success-color: #d4edda;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --gray-color: #6c757d;
+    --light-gray: #f8f9fa;
+    --background: #f5f5f5;
+    --text-dark: #333;
+    --text-light: #fff;
+    --shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --border-radius: 10px;
+    --spacing: 1rem;
+}
+
+/* Estilos base */
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+    background: var(--primary-color);
+    color: white;
+    padding: var(--spacing);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: var(--shadow);
+}
+
+.navbar h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.logout-btn {
+    background: #ffffff;
+    color: var(--primary-color);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 var(--spacing);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Tabs */
+.tab-buttons {
+    display: flex;
+    gap: var(--spacing);
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    background: var(--light-gray);
+    color: var(--gray-color);
+    font-weight: 600;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+}
+
+.tab-button.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Tablas */
+.users-table, 
+.posts-table {
+    width: 100%;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-top: var(--spacing);
+    border-collapse: collapse;
+    overflow-x: auto;
+    display: block;
+}
+
+.users-table th, 
+.users-table td,
+.posts-table th,
+.posts-table td {
+    padding: var(--spacing);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    min-width: 120px;
+}
+
+.users-table th,
+.posts-table th {
+    background: var(--light-gray);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+/* Botones de acción */
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ban-btn {
+    background: var(--warning-color);
+    color: #000;
+}
+
+.delete-btn {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* Estados */
+.status-active {
+    color: var(--success-color);
+}
+
+.status-banned {
+    color: var(--danger-color);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1100;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 400px;
+    width: 90%;
+    box-sizing: border-box;
+}
+
+.modal-buttons {
+    margin-top: var(--spacing);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing);
+}
+
+.modal-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.confirm-btn {
+    background: var(--danger-color);
+    color: white;
+}
+
+.cancel-btn {
+    background: var(--gray-color);
+    color: white;
+}
+
+/* Contenido de posts */
+.post-content {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Archivos */
+.post-file {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+}
+
+.post-file-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.post-file-pdf {
+    color: var(--danger-color);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    background: #fff;
+    border: 1px solid var(--danger-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .container {
+        margin: 1rem auto;
+    }
+    
+    .users-table, 
+    .posts-table {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.75rem;
+    }
+
+    .navbar h1 {
+        font-size: 1.2rem;
+    }
+
+    .tab-button {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .users-table, 
+    .posts-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .users-table th, 
+    .users-table td,
+    .posts-table th,
+    .posts-table td {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .post-content {
+        max-width: 200px;
+    }
+
+    .action-btn {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0.5rem;
+    }
+
+    .navbar {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+        padding: 0.5rem;
+    }
+
+    .tab-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .tab-button {
+        width: 100%;
+    }
+
+    .modal-content {
+        padding: 1rem;
+        width: 95%;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+    }
+
+    .modal-btn {
+        width: 100%;
+    }
+
+    .post-file-container {
+        flex-direction: column;
+    }
+
+    .post-file-pdf {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+/* Utilidades */
+.fecha {
+    white-space: nowrap;
+    font-size: 0.9em;
+    color: var(--gray-color);
+}
+
+/* Secciones */
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}   

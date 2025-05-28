@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - RedSocialPro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+   <link rel="stylesheet" href="perfil.css">
+</head>
+<body>
+    <header class="header">
+        <h1><span style="font-size:24px;">Ⓡ</span> RedSocialPro</h1>
+        <nav class="nav-menu">
+            <a href="bienvenida.html"><i class="fas fa-home"></i> Inicio</a>
+            <a href="perfil.html" class="active"><i class="fas fa-user"></i> Perfil</a>
+            <a href="publicados.html"><i class="fas fa-newspaper"></i> Publicaciones</a>
+            <a href="comunicaciones.html"><i class="fas fa-comments"></i> Comunicaciones</a>
+        </nav>
+        <div class="user-info">
+            <span id="userName">Usuario</span>
+            <button class="btn-action" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Sidebar del perfil -->
+        <div class="profile-sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar" id="profileAvatar">
+                    U
+                </div>
+                <div class="profile-name" id="profileName">Usuario</div>
+                <div class="profile-email" id="profileEmail">usuario@email.com</div>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="statConnections">0</div>
+                        <div class="stat-label">Conexiones</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="statPosts">0</div>
+                        <div class="stat-label">Publicaciones</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="profile-content">
+            <!-- Información básica -->
+            <div class="content-card">
+                <h3><i class="fas fa-user-edit"></i> Información Básica</h3>
+                <div id="alertContainer"></div>
+                
+                <form id="basicInfoForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">Nombre</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Apellido</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Teléfono</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Ubicación</label>
+                        <input type="text" id="location" name="location" placeholder="Ciudad, País">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </form>
+            </div>
+
+            <!-- Resumen profesional -->
+            <div class="content-card">
+                <h3><i class="fas fa-file-alt"></i> Resumen Profesional</h3>
+                
+                <form id="summaryForm">
+                    <div class="form-group">
+                        <label for="professionalSummary">Describe tu experiencia y objetivos profesionales</label>
+                        <textarea id="professionalSummary" name="professionalSummary" 
+                                placeholder="Ej: Desarrollador full-stack con 5 años de experiencia en JavaScript y Python. Apasionado por crear soluciones innovadoras..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Actualizar Resumen
+                    </button>
+                </form>
+            </div>
+
+            <!-- Experiencia laboral -->
+            <div class="content-card">
+                <h3><i class="fas fa-briefcase"></i> Experiencia Laboral</h3>
+                
+                <button type="button" class="btn-add" onclick="agregarExperiencia()">
+                    <i class="fas fa-plus"></i> Agregar Experiencia
+                </button>
+                
+                <div id="experienceContainer">
+                    <div class="experience-item">
+                        <div class="experience-header">
+                            <div>
+                                <div class="experience-title">Ejemplo: Desarrollador Senior</div>
+                                <div class="experience-company">TechCorp Inc.</div>
+                            </div>
+                            <div class="experience-period">2020 - Presente</div>
+                        </div>
+                        <p>Desarrollo de aplicaciones web usando React y Node.js. Liderazgo de equipo de 3 desarrolladores.</p>
+                    </div>
+                </div>
+                
+                <!-- Formulario para nueva experiencia (oculto) -->
+                <div id="experienceForm" class="hidden">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="jobTitle">Título del Puesto</label>
+                            <input type="text" id="jobTitle" name="jobTitle">
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Empresa</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Fecha de Inicio</label>
+                            <input type="month" id="startDate" name="startDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">Fecha de Fin</label>
+                            <input type="month" id="endDate" name="endDate">
+                            <small style="color: #666;">Deja en blanco si es tu trabajo actual</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="jobDescription">Descripción del Puesto</label>
+                        <textarea id="jobDescription" name="jobDescription" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="button" class="btn-primary" onclick="guardarExperiencia()">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="cancelarExperiencia()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Educación -->
+            <div class="content-card">
+                <h3><i class="fas fa-graduation-cap"></i> Educación</h3>
+                
+                <button type="button" class="btn-add" onclick="agregarEducacion()">
+                    <i class="fas fa-plus"></i> Agregar Educación
+                </button>
+                
+                <div id="educationContainer">
+                    <div class="education-item">
+                        <div class="education-header">
+                            <div>
+                                <div class="education-title">Ejemplo: Ingeniería en Sistemas</div>
+                                <div class="education-institution">Universidad Nacional</div>
+                            </div>
+                            <div class="education-period">2016 - 2020</div>
+                        </div>
+                        <p>Bachillerato en Ciencias de la Computación con especialización en desarrollo web.</p>
+                    </div>
+                </div>
+                
+                <!-- Formulario para nueva educación (oculto) -->
+                <div id="educationForm" class="hidden">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="degree">Título/Grado</label>
+                            <input type="text" id="degree" name="degree">
+                        </div>
+                        <div class="form-group">
+                            <label for="institution">Institución</label>
+                            <input type="text" id="institution" name="institution">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eduStartDate">Año de Inicio</label>
+                            <input type="number" id="eduStartDate" name="eduStartDate" min="1950" max="2030">
+                        </div>
+                        <div class="form-group">
+                            <label for="eduEndDate">Año de Finalización</label>
+                            <input type="number" id="eduEndDate" name="eduEndDate" min="1950" max="2030">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="eduDescription">Descripción (opcional)</label>
+                        <textarea id="eduDescription" name="eduDescription" rows="2"></textarea>
+                    </div>
+                    
+                    <button type="button" class="btn-primary" onclick="guardarEducacion()">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="cancelarEducacion()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Habilidades -->
+            <div class="content-card">
+                <h3><i class="fas fa-tools"></i> Habilidades</h3>
+                
+                <div class="skill-input">
+                    <input type="text" id="skillInput" placeholder="Agrega una habilidad (ej: JavaScript, Marketing Digital, etc.)" onkeypress="agregarHabilidad(event)">
+                    <button type="button" class="btn-add" onclick="agregarHabilidad()">
+                        <i class="fas fa-plus"></i> Agregar
+                    </button>
+                </div>
+                
+                <div id="skillsContainer" class="skills-container">
+                    <div class="skill-tag">
+                        JavaScript
+                        <span class="skill-remove" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    </div>
+                    <div class="skill-tag">
+                        React
+                        <span class="skill-remove" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    </div>
+                    <div class="skill-tag">
+                        Node.js
+                        <span class="skill-remove" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar autenticación
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario') || 'null');
+
+            if (!token || !usuario) {
+                window.location.href = 'index.html?logout=true';
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:3000/verificar-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Token inválido');
+                }
+
+                currentUser = usuario;
+                cargarDatosUsuario();
+
+            } catch (error) {
+                console.error('Error al verificar autenticación:', error);
+                window.location.href = 'index.html?logout=true';
+            }
+        });
+
+        function cargarDatosUsuario() {
+            if (!currentUser) return;
+
+            // Actualizar sidebar
+            document.getElementById('userName').textContent = currentUser.nombre;
+            document.getElementById('profileName').textContent = currentUser.nombre;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('profileAvatar').textContent = currentUser.nombre.charAt(0).toUpperCase();
+
+            // Actualizar formulario básico
+            const [firstName, ...lastNameParts] = currentUser.nombre.split(' ');
+            document.getElementById('firstName').value = firstName || '';
+            document.getElementById('lastName').value = lastNameParts.join(' ') || '';
+            document.getElementById('email').value = currentUser.email || '';
+
+            // Cargar estadísticas (placeholder)
+            document.getElementById('statConnections').textContent = '0';
+            document.getElementById('statPosts').textContent = '0';
+        }
+
+        // Manejar formulario de información básica
+        document.getElementById('basicInfoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            // Combinar nombre y apellido
+            const nombreCompleto = `${data.firstName} ${data.lastName}`.trim();
+            
+            try {
+                showAlert('Información actualizada exitosamente', 'success');
+                
+                // Actualizar datos locales
+                currentUser.nombre = nombreCompleto;
+                localStorage.setItem('usuario', JSON.stringify(currentUser));
+                
+                // Actualizar UI
+                document.getElementById('profileName').textContent = nombreCompleto;
+                document.getElementById('userName').textContent = nombreCompleto;
+                document.getElementById('profileAvatar').textContent = nombreCompleto.charAt(0).toUpperCase();
+                
+            } catch (error) {
+                showAlert('Error al actualizar información: ' + error.message, 'error');
+            }
+        });
+
+        // Manejar formulario de resumen
+        document.getElementById('summaryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showAlert('Resumen profesional actualizado', 'success');
+        });
+
+        // Funciones para experiencia laboral
+        function agregarExperiencia() {
+            document.getElementById('experienceForm').classList.remove('hidden');
+        }
+
+        function cancelarExperiencia() {
+            document.getElementById('experienceForm').classList.add('hidden');
+            document.getElementById('experienceForm').querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+        }
+
+        function guardarExperiencia() {
+            const form = document.getElementById('experienceForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            if (!data.jobTitle || !data.company) {
+                showAlert('Por favor completa al menos el título del puesto y la empresa', 'error');
+                return;
+            }
+
+            // Crear elemento de experiencia
+            const experienceHTML = `
+                <div class="experience-item">
+                    <div class="experience-header">
+                        <div>
+                            <div class="experience-title">${data.jobTitle}</div>
+                            <div class="experience-company">${data.company}</div>
+                        </div>
+                        <div class="experience-period">${data.startDate} - ${data.endDate || 'Presente'}</div>
+                    </div>
+                    ${data.jobDescription ? `<p>${data.jobDescription}</p>` : ''}
+                </div>
+            `;
+
+            document.getElementById('experienceContainer').insertAdjacentHTML('beforeend', experienceHTML);
+            cancelarExperiencia();
+            showAlert('Experiencia agregada exitosamente', 'success');
+        }
+
+        // Funciones para educación
+        function agregarEducacion() {
+            document.getElementById('educationForm').classList.remove('hidden');
+        }
+
+        function cancelarEducacion() {
+            document.getElementById('educationForm').classList.add('hidden');
+            document.getElementById('educationForm').querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+        }
+
+        function guardarEducacion() {
+            const form = document.getElementById('educationForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            if (!data.degree || !data.institution) {
+                showAlert('Por favor completa al menos el título y la institución', 'error');
+                return;
+            }
+
+            const educationHTML = `
+                <div class="education-item">
+                    <div class="education-header">
+                        <div>
+                            <div class="education-title">${data.degree}</div>
+                            <div class="education-institution">${data.institution}</div>
+                        </div>
+                        <div class="education-period">${data.eduStartDate} - ${data.eduEndDate}</div>
+                    </div>
+                    ${data.eduDescription ? `<p>${data.eduDescription}</p>` : ''}
+                </div>
+            `;
+
+            document.getElementById('educationContainer').insertAdjacentHTML('beforeend', educationHTML);
+            cancelarEducacion();
+            showAlert('Educación agregada exitosamente', 'success');
+        }
+
+        // Funciones para habilidades
+        function agregarHabilidad(event) {
+            if (event && event.type === 'keypress' && event.key !== 'Enter') {
+                return;
+            }
+            
+            const input = document.getElementById('skillInput');
+            const habilidad = input.value.trim();
+            
+            if (!habilidad) return;
+
+            const skillHTML = `
+                <div class="skill-tag">
+                    ${habilidad}
+                    <span class="skill-remove" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            `;
+
+            document.getElementById('skillsContainer').insertAdjacentHTML('beforeend', skillHTML);
+            input.value = '';
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'success' : 'error';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-hide después de 5 segundos
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        async function cerrarSesion() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                await fetch('http://localhost:3000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                localStorage.clear();
+                window.location.href = 'index.html?logout=true';
+            }
+        }
+    </script>
+</body>
+</html>
